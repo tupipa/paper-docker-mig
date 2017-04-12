@@ -1,0 +1,30 @@
+
+In this section, we evaluate the performance of the system for different workloads under different network and computing conditions. Specifically, we evaluate the offloading service handoff system by showing in what extent the total hand-off time and total transferred size are reduced.
+
+In our experiment, we set up three migration scenarios\footnote{TODO:need a new design of experiments}: 
+\begin{enumerate}
+    \item VM-VM migration:
+    Docker Hosts are two virtual machines on the same Desktop server. Docker containers are migrated from the Docker host to another Docker host.
+    \item VM-Laptop-Ethernet: 
+    One Docker host is a Virtual Machine on the Desktop server. Another Docker host  is a laptop connected via Ethernet. Docker containers are migrated from the virtual machine to the laptop via gigabit Ethernet connection\footnote{The actual network condition needs furthur confirmation}.
+    \item VM-Laptop-Wireless:
+    On Docker host is a virtual machine on the Desktop server, another is the same laptop as in 2). But the connection is changed. The laptop is connected by a wireless adapter. So the network changed to wireless connection.
+\end{enumerate}
+
+The desktop server is equipped with Intel$^{R}$ Core$^{TM}$ i3-6100 Processor (3.70GHz, 2 cores, 4 threads) and 16GB DDR4 memory. Two virtual machines are running with 2 vcpus and 4GB memory each.
+The laptop is with Intel$^{R}$ Core$^{TM}$ Duo T6570 (2.2GHz, 2 cores) and 2GB DDR2 memory. Both the machines and virtual machines are running Ubuntu 16.04 LTS as the operating system.
+
+
+
+\input{figure/table-optimized.tex}
+
+\begin{figure}[tb!]
+    \centering
+    \includegraphics[width=\textwidth]{figure/test-tarssh.eps}
+    \caption{Time of Container Migration Stages}
+    \label{fig:timestage}
+\end{figure}
+
+
+TODO :
+In order to make the result more comparable to others' work and avoid the effect of certain hardwares, we need to use Linux Traffic Control (tc\cite{tc} )  tool to control network traffic.

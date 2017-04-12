@@ -1,0 +1,43 @@
+
+\subsection{Docker Layered Storage Management}\label{aufsIntroduction}
+
+As we mentioned above, Docker use layered storage for its containers. Each Docker image references a list of read-only layers that represent file system differences. Layers are stacked on top of each other to form a base for a container’s root filesystem \cite{dockerlayer}. 
+% \cite{https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#images-and-layers}
+
+
+When a new container is created, a new, thin, writable storage layer is created on top of the underlying image layer stack, which is often called the \textit{``container layer''}. All changes made to the running container -- such as writing new files, modifying existing files, and deleting files - are written to this thin writable container layer\cite{dockerlayer}.
+ 
+% It greatly simplifies the process of setting environment for any software platform. 
+
+% \subsection{Docker Container File System Structure and Synchronization based on AUFS storage driver} 
+
+
+\subsubsection{Docker Addressable Images}~\\
+Since Docker 1.10, all the image and layer data are addressed by secure content hash. It's supposed to improve security by avoiding ID collisions, and maintaining data integrity after pull, push, load, and save operations. It also enables better sharing of layers by allowing many images to freely share their layers even if they didn’t come from the same build\cite{dockerlayer}. 
+
+However, for the same image downloaded from the cloud on the same build, Docker will mapping all its original layer ID to a new secure content hash, called `cached ID'. This results in that for two Docker hosts, even they downloaded the same image from the same build on DockerHub, they will access the image layers with different IDs. 
+This becomes a challenge when we want to migration a running container from one Docker host to another. In order to avoid mismatch in the layer IDs, we need to first remapping the old cached IDs to the new ones on the target Docker host. After remapping, we could enable the sharing of image layers from the same origin. 
+
+
+% In the Docker's root system, the /usr/lib/docker/ by default (or /usr/lib/docker/0.0/ for docker 1.10 version), 
+
+In order to understand how those addressable images work, we take one of the most popular storage driver, AUFS, as an example to show the structure of the container file systems.
+
+% TODO: more details in images management, including the mapping details. Draw a docker root directory structure Figure
+
+% \paragraph{AUFS storage}\mbox{}\\
+
+\subsubsection{AUFS storage}~\\
+Docker delegate the task of managing the container's layered file system to its pluggable storage driver. 
+The Docker storage driver is designed to provide a single unified view from a stack of image layers.
+Users can choose different kinds of storage driver that are best for their environment and particular use-cases. The default storage driver on Docker is AUFS. Therefore, we take this as an example to introduce the layered images management.
+
+AUFS storage driver implements Docker image layers by a union mount system. Union Mount is a way of combining numerous directories into one directory that looks like it contains the content from all the them \cite{unionMount}. Using Union filesystems merge all the files for each image layer together and presents them as one single read-only directory at the union mount point. If there are duplicate files in different layers, only the file on the higher level layer is available.
+
+AUFS driver has three directories: layers, diff, and mnt. `layers' directory stores the metadata of how image layers are stacked together. `diff' directory stores the exact data inside each layers. `mnt' directory stores the mount points for the root file system of all the containers. 
+
+All the cached ID of image layers is stored in the \textit{/image/aufs/layerdb/sha256} directory.
+
+TODO: more details in AUFS. Draw an aufs driver directory structure Figure
+
+\input{figure/aufs-tree-fd.tex}

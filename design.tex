@@ -1,0 +1,96 @@
+
+In this section, we dive into the inner details of Docker container's layered file system and show our design of the  service hand-off framework based on live migration of the containers.  Generally, our architecture supports high speed offloading service hand-off through the following stages:
+% \begin{enumerate*}[series = tobecont, itemjoin = \quad]
+
+\begin{enumerate}[label=\textbf{S\arabic*}]
+
+\item Dynamically predict the possible target servers and pre-download the offloading application's Docker images on each target servers.
+
+\item \label{predump} Checkpoint the container's memory and keep the container running. At the same time, send checkpointed memory images to the target servers. 
+
+\item \label{prepare} Upon receiving the hand-off request to a certain target server, prepare for file system synchronization by remapping the image layers' local identifications on the target server.
+
+% \item \label{firstsync} Upon receiving migration request, compress the thin container layer and send to target.
+
+\item \label{checkpoint} Checkpoint and stop the container. From this point the container will stop running on the source server and waiting to be restored on the target server.
+
+\item \label{img-sync} Get the different of checkpointed memory images between \ref{predump} and \ref{checkpoint}, and send the difference to the target server. 
+
+\item \label{fs-sync} Compress and send the thin container layer to the target host.
+% \item \label{finalsync} Synchronize the file system for the last time, updating only the changed files of the container layer before last synchronization in \ref{firstsync}.
+
+\item \label{restore} Restore container on the target host.
+
+\end{enumerate}
+
+
+
+% Generally, our architecture divides live migration of Docker containers into 5 stages:
+
+% \subsubsection{
+% Synchronize the file system of the container from source host to the target host 
+% } 
+
+% \subsubsection{Checkpoint and stop the running container, which will dump all the memory status of running processes inside the container using tool of CRIU(Checkpoint/Restore In Userspace)\cite{criu}.
+%     % \cite{https://criu.org/Main_Page}
+% }
+    
+% \subsubsection{
+%  Synchronize the file system again to send only the changed files since the last synchronization.
+%  }
+ 
+% \subsubsection{
+%  Send the checkpointed memory images to the target Docker host.
+%  }
+% \subsubsection{
+% Restore container on the target Docker host.
+% }
+
+
+Before we start to discuss our design, we first introduce some technical details about Docker and how it manages it's layered storage.
+
+
+\input{docker-intro.tex}
+
+% (Before migration, both the source and target edge server have the application base images downloaded.)
+ 
+\subsection{Remapping Image Layers' Identification}
+
+In AUFS addressable layers, the local cached ID for each downloaded image layer is stored in 
+
+\textit{NOTE: remmapping done. but errors reported when mounting the layers. Need further experiments on how docker mount the layers via AUFS.}
+
+\subsection{Memory Difference Tracking}
+In order to reduce the total memory image size during hand-off, we checkpoint the container and get a snapshot of the container's memory in stage \ref{predump}. The snapshot was transferred before the hand-off starts, just as the application's Docker images, which are also downloaded before the hand-off starts.
+
+Upon the hand-off starts, we checkpoint the container and stop it. Then we do a diff operation on the new memory dump images along with the old snapshot we got from stage \ref{predump}. Then we only need to transfer the difference of the dump memory to the target node. We use Xdelta3 to get the memory difference.
+
+
+\subsection{Compression of the Transferred Data}
+
+During the live migration of a container, we mainly have 4 kinds of data need to transfer:
+
+The layer stacks information, the container writable layer, the meta data files of the container, and the main memory images checkpointed by CRIU. 
+
+% In order to speed up the synchronization process, we combine both the compression techniques and synchronization tools. 
+
+The layer stacks information is send via RPC socket connection. Those information is only a list of SHA256 ID strings, so it's quite efficient to be sent as a socket message. There is no need to compress it.
+
+The container writable layer and meta data files are regular files in the storage system, so we use bzip2  to compress and send via ssh connection.
+
+The dump memory images are binary data, which is not efficient to compressed using bzip2. So we use ??? to compress and send via ssh connections.
+
+% \ref{predump}, \ref{img-sync}.
+
+% For the root file system and meta data files. We have two stages of files synchronization before and after the container was checkpoints. The first synchronization in \ref{firstsync} will transfer the base file system for the container layer, so it's better to compress it. We use 'tar' command to compress and sent via SSH. For the final synchronization of the file system, since we already have most of the files transferred, we choose to use 'rsync' to send over only the changed files.
+
+% For the checkpointed memory images, we compress them via 'tar' compression and send via SSH connections.
+
+% Syncing smaller files individually through rsync or scp results in each file starting at least one own data packet over the net. If the file is small and the packets are many, this results in increased protocol overhead. Now count in that there are more than one data packets for each file by means of rsync protocol as well (transferring checksums, comparing...), the protocol overhead quickly builds up
+
+% \url{http://unix.stackexchange.com/questions/30953/tar-rsync-untar-any-speed-benefit-over-just-rsync}
+
+TODO: more details about compression and synchronization: more memory images compression techniques (to replace tar cmd). 
+
+TODO: rsync vs. tar comparison
+

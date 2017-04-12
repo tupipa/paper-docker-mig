@@ -1,0 +1,59 @@
+https://github.com/docker/docker/blob/b248de7e332b6e67b08a8981f68060e6ae629ccf/daemon/graphdriver/aufs/aufs.go
+/*
+aufs driver directory structure
+  .
+  ├── layers // Metadata of layers
+  │   ├── 1
+  │   ├── 2
+  │   └── 3
+  ├── diff  // Content of the layer
+  │   ├── 1  // Contains layers that need to be mounted for the id
+  │   ├── 2
+  │   └── 3
+  └── mnt    // Mount points for the rw layers to be mounted
+      ├── 1
+      ├── 2
+      └── 3
+*/
+
+
+
+
+https://docs.docker.com/engine/userguide/storagedriver/aufs-driver
+
+AUFS is a unification filesystem. This means that it takes multiple directories on a single Linux host, stacks them on top of each other, and provides a single unified view. To achieve this, AUFS uses a union mount.
+
+AUFS stacks multiple directories and exposes them as a unified view through a single mount point. All of the directories in the stack, as well as the union mount point, must all exist on the same Linux host. AUFS refers to each directory that it stacks as a branch.
+
+Within Docker, AUFS union mounts enable image layering. The AUFS storage driver implements Docker image layers using this union mount system. AUFS branches correspond to Docker image layers. The diagram below shows a Docker container based on the ubuntu:latest image.
+
+Containers
+
+Running containers are mounted below /var/lib/docker/aufs/mnt/<container-id>. This is where the AUFS union mount point that exposes the container and all underlying image layers as a single unified view exists. If a container is not running, it still has a directory here but it is empty. This is because AUFS only mounts a container when it is running. With Docker 1.10 and higher, container IDs no longer correspond to directory names under /var/lib/docker/aufs/mnt/<container-id>.
+
+Container metadata and various config files that are placed into the running container are stored in /var/lib/docker/containers/<container-id>. Files in this directory exist for all containers on the system, including ones that are stopped. However, when a container is running the container’s log files are also in this directory.
+
+A container’s thin writable layer is stored in a directory under /var/lib/docker/aufs/diff/. With Docker 1.10 and higher, container IDs no longer correspond to directory names. However, the containers thin writable layer still exists here and is stacked by AUFS as the top writable layer and is where all changes to the container are stored. The directory exists even if the container is stopped. This means that restarting a container will not lose changes made to it. Once a container is deleted, its thin writable layer in this directory is deleted.
+
+
+
+https://medium.com/@jessgreb01/digging-into-docker-layers-c22f948ed612#.e28eceqpx
+
+To dig down into each layer of the image and view its contents you need to view the layers on the Docker host at:
+
+   /var/lib/docker/aufs
+
+
+The /var/lib/docker/aufs directory points to three other directories: diff, layers and mnt.
+
+    Image layers and their contents are stored in the diff directory.
+    How image layers are stacked is in the layers directory.
+    Running containers are mounted below the mnt directory (more explained below about mounts).
+    
+    
+To get a better idea about how the layers work, I think it’s fun to talk about the AUFS storage driver. If you aren’t familiar with this technology, here are a few key words I think are good to know:
+
+    Union Mount is a way of combining numerous directories into one directory that looks like it contains the content from all the them.
+    AUFS stands for Another union filesystem or Advanced multi-layered unification filesystem (as of version 2). AUFS implements a union mount for Linux file systems.
+    AUFS storage driver implements Docker image layers using the union mount system.
+    AUFS Branches — each Docker image layer is called a AUFS branch.

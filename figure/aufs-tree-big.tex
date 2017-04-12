@@ -1,0 +1,143 @@
+
+%  https://github.com/docker/docker/blob/b248de7e332b6e67b08a8981f68060e6ae629ccf/daemon/graphdriver/aufs/aufs.go
+% /*
+% aufs driver directory structure
+%   .
+%   ├── layers // Metadata of layers
+%   │   ├── 1
+%   │   ├── 2
+%   │   └── 3
+%   ├── diff  // Content of the layer
+%   │   ├── 1  // Contains layers that need to be mounted for the id
+%   │   ├── 2
+%   │   └── 3
+%   └── mnt    // Mount points for the rw layers to be mounted
+%       ├── 1
+%       ├── 2
+%       └── 3
+% */
+\begin{figure}
+    \centering
+\begin{forest}
+    for tree={
+    font=\sffamily,
+    minimum height=0.75cm,
+    rounded corners=4pt,
+    grow'=0,
+    inner ysep=8pt,
+    child anchor=west,
+    parent anchor=south,
+    anchor=west,
+    calign=first,
+    edge={rounded corners},
+    edge path={
+      \noexpand\path [draw, \forestoption{edge}]
+      (!u.south west) +(12.5pt,0) |- (.child anchor)\forestoption{edge label};
+    },
+    before typesetting nodes={
+      if n=1
+        {insert before={[,phantom,minimum height=18pt]}}
+        {}
+    },
+    fit=band,
+    s sep=12pt,
+    before computing xy={l=25pt},
+  }
+    [/var/lib/docker/0.0/
+    [\myfolder{aufs/}
+        [mnt/
+            [<rootfs id1>/
+                [/boot/]
+                [/usr/]
+                [/lib/]
+                [...]
+            ]
+        [<rootfs id2>/]
+      ]
+      [layers/
+        [<rootfs id1>]
+        [<rootfs id2>]
+     m]
+      [diff/
+        [<layer cached id1>/
+            [/lib/]
+        ]
+        [<layer cached id2>/
+            [/home/user/]
+        
+        ]
+    ]
+  ]
+  [\myfolder{image}
+    [aufs
+        [layerdb]
+        [imagedb]
+    ]
+  ]
+]
+\end{forest}
+    \caption{Caption}
+    \label{fig:my_label}
+
+\end{figure}
+
+
+\begin{figure}
+\centering
+\begin{forest}
+  for tree={
+    font=\ttfamily,
+    grow'=0,
+    child anchor=west,
+    parent anchor=south,
+    anchor=west,
+    calign=first,
+    edge path={
+      \noexpand\path [draw, \forestoption{edge}]
+      (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+    },
+    before typesetting nodes={
+      if n=1
+        {insert before={[,phantom]}}
+        {}
+    },
+    fit=band,
+    before computing xy={l=15pt},
+ }
+    [/var/lib/docker/0.0/
+    [aufs/
+        [mnt/
+            [<rootfs id1>/
+                [/boot/]
+                [/usr/]
+                [/lib/]
+                [...]
+            ]
+        [<rootfs id2>/]
+      ]
+      [layers/
+        [<rootfs id1>]
+        [<rootfs id2>]
+     m]
+      [diff/
+        [<layer cached id1>/
+            [/lib/]
+        ]
+        [<layer cached id2>/
+            [/home/user/]
+        
+        ]
+    ]
+  ]
+  [image
+    [aufs
+        [layerdb]
+        [imagedb]
+    ]
+  ]
+]
+\end{forest}
+\caption{Caption}
+\label{fig:my_label2}
+
+\end{figure}

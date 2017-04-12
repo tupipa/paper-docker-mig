@@ -1,0 +1,147 @@
+%  https://github.com/docker/docker/blob/b248de7e332b6e67b08a8981f68060e6ae629ccf/daemon/graphdriver/aufs/aufs.go
+% /*
+% aufs driver directory structure
+%   .
+%   ├── layers // Metadata of layers
+%   │   ├── 1
+%   │   ├── 2
+%   │   └── 3
+%   ├── diff  // Content of the layer
+%   │   ├── 1  // Contains layers that need to be mounted for the id
+%   │   ├── 2
+%   │   └── 3
+%   └── mnt    // Mount points for the rw layers to be mounted
+%       ├── 1
+%       ├── 2
+%       └── 3
+% */
+
+ \tikzset{/forest,
+    % symlink/.append style={
+    %   opacity=.25,
+    %   text opacity=.5,
+    %   before drawing tree={
+    %     {tikz+={\draw [thick, -{>[]}] (!#1.west) ++(4pt,-1.5pt) arc (315:120:5pt);}}
+    %   },
+    % },
+    % file/.append style={
+    file/.style={
+        % minimum width=0.5cm,
+        % minimum height=0.5cm,
+        % parent anchor=south,
+        % child anchor=north,
+        % sibling distance = 4cm,
+        % dogeared,
+        % fill=white!50,
+        % draw,
+        trapezium,
+        trapezium angle=0,
+        rounded corners=0pt,
+        draw,
+        fill=white!50,
+    },
+   }
+  
+  
+\begin{figure*}
+\centering
+% http://tex.stackexchange.com/questions/5073/making-a-simple-directory-tree
+\begin{forest}
+for tree={
+    minimum width=0.5cm,
+    minimum height=0.5cm,
+    parent anchor=south,
+    child anchor=north,
+    trapezium,
+    trapezium angle=95,
+    rounded corners=2pt,
+    draw,
+    fill=blue!50,
+    % myfolder,
+}
+[/var/lib/docker/0.0/
+[aufs/
+    [mnt/
+        [<rootfs ID>/
+            [/boot/
+                [...]
+            ]
+            [/usr/
+                [...]
+            ]
+            [/home/
+                [username/
+                    [.bashrc, file]
+                    [... , file]
+                ]
+            ]
+            [/.../]
+        ]
+    ]
+    [layers/
+        [<rootfs ID>, file]
+    ]
+    [diff/
+        [<layerID>/
+            [/lib/
+                [...]
+            ]
+            [/.../]
+        ]
+        [<layerID>/
+            [/home/
+                [usr/]
+            ]
+        ]
+    ]
+]
+[image
+    [aufs
+        [layerdb
+            % [mounts
+            %     % [<conID>]
+            % ]
+            [sha256
+                [<O-layerID>
+                    [cache-id, file]
+                    [diff,file]
+                    [parent,file]
+                    [..., file]
+                ]
+            ]
+        ]
+        % [imagedb]
+    ]
+]
+[containers
+    [<conID1>
+        [config.v2.json, file]
+        [hostname, file]
+        [..., file]
+    ]
+]   
+]
+\end{forest}
+
+\caption{Docker Layered File System Structure Based on AUFS Storage Driver}
+
+\floatfoot{White box stands for a file and blue box stands for a directory. 
+The directory \textit{./aufs/mnt/<rootfs ID>/} is the mount points of the root file system for the containers. All the image layers are union mounted to this folder and provide a whole system view for the container.
+The directory \textit{./aufs/diff/<layer ID>/} stores all the image layer contents from one specific layer identified by a local SHA256 ID, which we noted as <layer ID>. 
+The file \textit{./aufs/layers/<rootfs ID>} is a file stores all the image layers' cached IDs for the container.
+The 
+%   ├── layers // Metadata of layers
+%   │   ├── 1
+%   │   ├── 2
+%   │   └── 3
+%   ├── diff  // Content of the layer
+%   │   ├── 1  // Contains layers that need to be mounted for the id
+%   │   ├── 2
+%   │   └── 3
+%   └── mnt    // Mount points for the rw layers to be mounted
+%       ├── 1
+%       ├── 2
+%       └── 3
+}
+\label{fig:my_label2}
+\end{figure*}

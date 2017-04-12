@@ -1,0 +1,54 @@
+\url{http://www.computerweekly.com/feature/Docker-storage-101-How-storage-works-in-Docker}
+
+Containers are expected to be transient (短暂的) in nature compared to VMs and that also applies to the storage assigned to them.
+
+Docker uses a feature known as an overlay file system to implement a copy-on-write process that stores any updated information to the root file system of a container, compared to the original image on which it is based. These changes are lost if the container is subsequently deleted from the system. A container therefore does not have persistent storage by default.
+
+However, Docker provides two features that enable access to more persistent storage resources -- Docker volumes and data containers.
+
+A Docker volume permits data to be stored in a container outside of the boot volume (but within the root file system) and can be implemented in two ways. A container can be created with one or more volumes by providing a share name passed to the "-v" switch parameter (for example, /dockerdata). This has the effect of creating an entity within the Docker configuration folder (/var/lib/docker) that represents the contents of the volume.
+
+Configuration data on volumes is stored in the /var/lib/docker/volumes folder, with each sub-directory representing a volume name based on a UUID. The data itself is stored in the /var/lib/docker/vfs/dir folder (again based on UUID name).
+
+The data in any volume can be freely browsed and edited by the host operating system, and standard Unix permissions apply. The use of volumes has advantages and disadvantages. As the data is stored in a standard file system, it can be backed up, copied or moved in and out by the operating system
+
+The disadvantage here is that the volume name is in UUID format and that makes it tricky to associate with a container name. Docker makes things easier by providing the "docker cp" command that allows files and folders to be copied from a host directory to a container directory path by specifying the container name.
+
+A Docker volume can also be associated with a host directory. This is again specified on the "-v" switch, using a format that separates the host and container paths with a colon, as follows: "-v /host:/container". This method allows persistent data on the host to be accessed by a container. 
+
+It would therefore be possible to provide access to external shared storage on an NFS share or LUN by using the volume option to access a host share created on the external storage. This method could also be used to back up the data accessed by containers.
+
+Docker data container
+
+The second option for managing data in Docker is to use a Docker data container.
+
+The concept is essentially a dormant container that has one or more volumes created within it (as described above). These volumes can then be exported to one or more other containers using the ‘-volumes-from’ switch when starting up additional containers.
+
+In some respects, the data volume container can be thought of as acting like an internal Docker NFS server, providing access to containers from a central mount point.
+
+
+The benefit of this method of access is that it abstracts the location of the original data, making the data container a logical mount point. It also allows "application" containers accessing the data container volumes to be created and destroyed while keeping the data persistent in a dedicated container.
+
+
+
+Orphan storage -- Currently it is possible to remove (delete) a container without deleting related volumes. In fact, this is the default behaviour unless specifically overridden. This makes it easy to end up with orphan volumes that have no referenced container.
+
+Cleaning up orphan storage is currently a difficult task that requires trawling through the container configuration files to match up containers and their associated volumes.
+
+
+Security -- There is no additional security on volumes or data containers other than standard Unix file permissions and the option to configure read-only or read-write access. This means file access permissions for users on the containers needs to match the host settings.
+
+Data integrity -- Sharing data using volumes and data containers provides for no level of data integrity protection. Features such as file locking need to be managed by the containers themselves. This represents an additional overhead that must be added to the application. 
+
+Docker provides no data protection facilities, such as snapshots or replication, so data management has to be handled by the host or the container.
+
+Lack of support for external storage -- There is no specific support within Docker for external storage other than the features provided by the host operating system. Docker volumes are stored by default in the /var/lib/docker directory, which can become a capacity and performance bottleneck. However, it is possible to change this location using a switch at startup of the Docker daemon.
+
+The last point above highlights one of the current problems with Docker and storage: the inability to manage data shared between containers that run on separate physical hosts.
+
+Docker volumes can be placed on external storage, but the current design does not facilitate the ability to use a volume from one host to another.
+
+To resolve this, solutions such as Flocker from ClusterHQ are emerging to address issues of volume portability. There are also proposed changes to Docker to add more functionality around the management of volumes. In the short term, data management will be an issue, but hopefully these issues will be addressed quickly.
+
+
+
