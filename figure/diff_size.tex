@@ -1,0 +1,77 @@
+\begin{figure}
+\begin{subfigure}[b]{0.45\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/face-518744dump_iter_11.eps}
+    \caption{Memory Dumps}
+    \label{fig:dump}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.45\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/face-518744-iter-11.eps}
+    \caption{Dirty Memory, original}
+    \label{fig:diff-ori}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/face-518744-iter-11-2.eps}
+    \caption{Dirty Memory, adjacent}
+    \label{fig:diff-adj}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.45\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/face-518744diffdiff_ori11.eps}
+    \caption{Dirty Difference, original}
+    \label{fig:diffdiff-adj}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/face-518744diffdiff_adj11.eps}
+    \caption{Dirty Difference, adjacent}
+    \label{fig:diffdiff-ori}
+\end{subfigure}
+
+\caption{  Dirty Memory Size Analysis for OpenFace. The data shows 11 dumps of the running container of OpenFace, indexed from dump 0 to dump 10. Memory is dumped every 10 seconds. 
+Dirty Memory Size of Dump 1~10, Compared to Original Dump 0 .
+Dirty Memory Size Between Two Adjacent Dumps. Memory is dumped every 10 seconds.
+Size of Difference Between Two Adjacent Dirty Memory from Every three Adjacent Memory Dumps. Memory is dumped every 10 seconds. }
+\label{fig:diff-diff}
+\end{figure}
+
+% \begin{figure}[tb!]
+%     \centering
+%     \includegraphics[width=0.9\textwidth]
+%     % {figure/test-tarssh.eps}
+%     {figure/face-518744-iter-11.eps}
+%     \caption{Dirty Memory Size of Dump 1~10, Compared to Original Dump 0 }
+%     \label{fig:diff-0}
+% \end{figure}
+
+% \begin{figure}[tb!]
+%     \centering
+%     \includegraphics[width=0.45\textwidth]
+%     % {figure/test-tarssh.eps}
+%     {figure/face-518744-iter-11-2.eps}
+%     \caption{Dirty Memory Size Between Two Adjacent Dumps. Memory is dumped every 10 seconds }
+%     \label{fig:diff-adjacent}
+% \end{figure}
+
+% \begin{figure}[tb!]
+%     \centering
+%     \includegraphics[width=0.45\textwidth]
+%     % {figure/test-tarssh.eps}
+%     {figure/face-518744-diffdiff-11.eps}
+%     \caption{Size of Difference Between Two Adjacent Dirty Memory from Every three Adjacent Memory Dumps. Memory is dumped every 10 seconds. }
+%     \label{fig:diff-diff}
+% \end{figure}

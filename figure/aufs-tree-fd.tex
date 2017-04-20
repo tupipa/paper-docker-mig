@@ -36,7 +36,7 @@
         % draw,
         trapezium,
         trapezium angle=0,
-        rounded corners=0pt,
+        rounded corners=2pt,
         draw,
         fill=white!50,
     },
@@ -53,83 +53,105 @@ for tree={
     parent anchor=south,
     child anchor=north,
     trapezium,
-    trapezium angle=95,
+    trapezium angle=0,
     rounded corners=2pt,
     draw,
     fill=blue!50,
+    % % http://tex.stackexchange.com/questions/278708/center-root-of-forest-tree
+    % if level=0{ 
+    % parent anchor=south,
+    % child anchor=north,
+    % align=center,
+    % l=1cm,
+    % fill=white,
+    % minimum width=\linewidth,
+    % inner xsep=0pt,
+    % outer xsep=0pt,
+    % }{},
     % myfolder,
 }
+% [, phantom, s sep = 1cm
 [/var/lib/docker/0.0/
+[containers
+    [<conID>
+        [config.v2.json, file]
+        % [resolve.conf, file]
+        [..., file]
+    ]
+    % [<conID1>
+    %     % [config.v2.json, file]
+    %     % % [hostname, file]
+    %     % [..., file]
+    % ]
+]   
 [aufs/
     [mnt/
         [<rootfs ID>/
-            [/boot/
-                [...]
-            ]
-            [/usr/
-                [...]
+            % [/boot/
+            %     [...]
+            % ]
+            [/etc/
+                [hostname, file]
+                [hosts, file]
             ]
             [/home/
-                [username/
-                    [.bashrc, file]
-                    [... , file]
-                ]
+                % [username/
+                %     [.bashrc, file]
+                %  [...]
+                % ]
             ]
-            [/.../]
+            % [/.../]
         ]
     ]
     [layers/
         [<rootfs ID>, file]
     ]
     [diff/
-        [<layerID>/
-            [/lib/
-                [...]
+        [<layer ID1>/
+            [/etc/
+                [hostname, file]
             ]
-            [/.../]
+            % [/.../]
         ]
-        [<layerID>/
-            [/home/
-                [usr/]
+        [<layerID2>/
+            [/etc/
+                [hostname, file]
+                [hosts, file]
             ]
         ]
     ]
 ]
-[image
-    [aufs
-        [layerdb
+
+[image/aufs/layerdb/sha256
+    % [aufs
+        % [layerdb
             % [mounts
             %     % [<conID>]
             % ]
-            [sha256
+            % [sha256
                 [<O-layerID>
                     [cache-id, file]
-                    [diff,file]
+                    % [diff,file]
                     [parent,file]
                     [..., file]
                 ]
-            ]
-        ]
+            % ]
+        % ]
         % [imagedb]
-    ]
+    % ]
 ]
-[containers
-    [<conID1>
-        [config.v2.json, file]
-        [hostname, file]
-        [..., file]
-    ]
-]   
 ]
 \end{forest}
 
 \caption{Docker Layered File System Structure Based on AUFS Storage Driver}
+\label{fig:aufs}
+\end{figure*}
 
-\floatfoot{White box stands for a file and blue box stands for a directory. 
-The directory \textit{./aufs/mnt/<rootfs ID>/} is the mount points of the root file system for the containers. All the image layers are union mounted to this folder and provide a whole system view for the container.
-The directory \textit{./aufs/diff/<layer ID>/} stores all the image layer contents from one specific layer identified by a local SHA256 ID, which we noted as <layer ID>. 
-The file \textit{./aufs/layers/<rootfs ID>} is a file stores all the image layers' cached IDs for the container.
-The 
+
+%  https://github.com/docker/docker/blob/b248de7e332b6e67b08a8981f68060e6ae629ccf/daemon/graphdriver/aufs/aufs.go
+% /*
+% aufs driver directory structure
+%   .
 %   ├── layers // Metadata of layers
 %   │   ├── 1
 %   │   ├── 2
@@ -142,6 +164,47 @@ The
 %       ├── 1
 %       ├── 2
 %       └── 3
+% */
+
+\begin{figure}
+\centering
+% http://tex.stackexchange.com/questions/5073/making-a-simple-directory-tree
+\begin{forest}
+for tree={
+    minimum width=0.5cm,
+    minimum height=0.5cm,
+    parent anchor=south,
+    child anchor=north,
+    trapezium,
+    trapezium angle=0,
+    rounded corners=2pt,
+    draw,
+    fill=blue!50,
+    % % http://tex.stackexchange.com/questions/278708/center-root-of-forest-tree
+    % if level=0{ 
+    % parent anchor=south,
+    % child anchor=north,
+    % align=center,
+    % l=1cm,
+    % fill=white,
+    % minimum width=\linewidth,
+    % inner xsep=0pt,
+    % outer xsep=0pt,
+    % }{},
+    % myfolder,
 }
-\label{fig:my_label2}
-\end{figure*}
+% [, phantom, s sep = 1cm
+[/var/run/docker/execdriver/native/\footnote{This is for Docker 1.10-dev, the latest Docker (version 17.04.0-ce, build 4845c56) has this directory changed to \textit{/var/run/docker/libcontainerd/containerd}}
+    [<conID1>
+        [state.json, file]
+    ]
+    [<conID2>
+        [state.json, file]
+    ]
+]
+% ]
+\end{forest}
+
+\caption{Runtime Data for Containers}
+\label{fig:aufs-runtime}
+\end{figure}

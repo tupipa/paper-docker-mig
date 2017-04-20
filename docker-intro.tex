@@ -6,22 +6,43 @@ As we mentioned above, Docker use layered storage for its containers. Each Docke
 
 
 When a new container is created, a new, thin, writable storage layer is created on top of the underlying image layer stack, which is often called the \textit{``container layer''}. All changes made to the running container -- such as writing new files, modifying existing files, and deleting files - are written to this thin writable container layer\cite{dockerlayer}.
- 
+\input{figure/figure-layer-stack.tex}
+For example, 
+Figure~\ref{fig:stacklist} shows the stacked image layers for OpenFace application.
+
 % It greatly simplifies the process of setting environment for any software platform. 
 
 % \subsection{Docker Container File System Structure and Synchronization based on AUFS storage driver} 
 
 
 \subsubsection{Docker Addressable Images}~\\
-Since Docker 1.10, all the image and layer data are addressed by secure content hash. It's supposed to improve security by avoiding ID collisions, and maintaining data integrity after pull, push, load, and save operations. It also enables better sharing of layers by allowing many images to freely share their layers even if they didn’t come from the same build\cite{dockerlayer}. 
+Since Docker 1.10, all the image and layer data are addressed by secure content SHA256 hash. 
+This addressable image design is supposed to improve security by avoiding ID collisions, and maintaining data integrity after pull, push, load, and save operations. It enables better sharing of layers by allowing many images to freely share their layers locally even if they didn’t come from the same build\cite{dockerlayer}. 
 
-However, for the same image downloaded from the cloud on the same build, Docker will mapping all its original layer ID to a new secure content hash, called `cached ID'. This results in that for two Docker hosts, even they downloaded the same image from the same build on DockerHub, they will access the image layers with different IDs. 
-This becomes a challenge when we want to migration a running container from one Docker host to another. In order to avoid mismatch in the layer IDs, we need to first remapping the old cached IDs to the new ones on the target Docker host. After remapping, we could enable the sharing of image layers from the same origin. 
+However, due to the active development of Docker platform and its relatively young ages of history, there is no available articles illustrating how those addressable images worked by those SHA256 hash. 
+% original and cache IDs are used and maintained throughout the life cycle of one container, as well as the life cycle of the underlying docker daemon. 
+By investigating into the source code of Docker as well as its one of its storage system, AUFS, we find out how Docker platform addresses different storage layers and propose our methods to leverage those layers in the live migration of Docker containers.
+% keeps track of those mapping relationship. 
+
+For example, we find that 
+if the same image is downloaded from the same build on the cloud, Docker will mapping the layers' original layer IDs to a new secure content hash, called `cache ID'. Every image layer's original ID will be replaced with its cache ID. From then on, Docker daemon will address the image layer by this cache ID when it creates, starts, stops, or checkpoints/restores a container. 
+
+This means that
+the image layer on the cloud will have different SHA256 IDs when downloaded to different Docker host. 
+% for two Docker hosts, even they downloaded the same image from the same build on DockerHub, they will be stored locally with different IDs. 
+It becomes a challenge to resolve those addressable IDs when we migrate a container between different hosts. 
+In order to reuse the image layers on different Docker host,
+we need to recognize whether two image layers are exactly the same layer even if they have different cache IDs locally. 
+% that have the same origin on two different Docker host.
+This require to recognize the image layers by its original IDs instead of the cache IDs exposed to Docker daemon. So, we need to first remapping the cached IDs to its original IDs and compare the original IDs on two Different host. If the two image layers on two host share the same original ID, we could determine they are exactly the same image layer. Then, on the target host, since Docker daemon address each layer with its locally generated cache IDs, we need to further remap the original ID to its local cache ID.
+% in order to make it compatible with the local addressing system of that Docker daemon. 
+After remapping all shared image layers to their local cache IDs on the target Docker, we need also to update the image layers indexing lists for the migrated containers, so that the container's file system will be mounted correctly on the target Docker host.
+% In order to do this, we then need to generate a new image layer stack with different cache IDs but actually have the same content inside since they have the same original layer IDs. 
 
 
 % In the Docker's root system, the /usr/lib/docker/ by default (or /usr/lib/docker/0.0/ for docker 1.10 version), 
 
-In order to understand how those addressable images work, we take one of the most popular storage driver, AUFS, as an example to show the structure of the container file systems.
+In order to understand how those addressable images work, we investigate the source code of Docker system along with one of its most popular storage driver, AUFS, and find out the structure of the container file systems. The following section will discuss more details about our findings inside the Docker platform.
 
 % TODO: more details in images management, including the mapping details. Draw a docker root directory structure Figure
 
@@ -38,6 +59,61 @@ AUFS driver has three directories: layers, diff, and mnt. `layers' directory sto
 
 All the cached ID of image layers is stored in the \textit{/image/aufs/layerdb/sha256} directory.
 
-TODO: more details in AUFS. Draw an aufs driver directory structure Figure
-
 \input{figure/aufs-tree-fd.tex}
+
+Figure~\ref{fig:aufs} shows the Docker storage structure based on AUFS driver. White box stands for a file and blue box stands for a directory. 
+
+
+\textbf{Container's Image Layer Stack List:} We know that each Docker image contains several image layers. Those image layers are addressed by their SHA256 content hash IDs. Each Docker image has a list that stores all these layer IDs in the order of how they stacked from top to bottom.
+The file \textit{./aufs/layers/<rootfs ID>-init}  in Figure \ref{fig:aufs} shows the path of this file inside the AUFS storage structure. This file stores a list of SHA256 IDs of all image layers that will be bind mounted together as the container's root file system. For example, for one container OpenFace with rootfs ID of \textit{
+febfb1642ebeb25857bf2a9c558bf695\footnote{SHA256 ID has 64 hexical bits, here we truncate it to 32 hexical bits in order to save space}
+}, it's stack list file\textit{./aufs/ layers/ febfb1642ebeb25857bf2a9c558bf695}
+
+
+There is another file \textit{./aufs/layers/<rootfs ID>} is the file stores this list of image layer IDs for that Docker image as well as the ID of the writable container layer.  The container layer's ID is used to address the thin writable layer for that container. This container layer ID is the same as the <rootfs ID>. 
+When the Docker daemon start or restore a container, it will refer to those two files to get a list of all underlying Docker image layer IDs and the container layer ID. Then it will resolve those addressable IDs and union mount all those layer stacks together with its thin writable container layer. After this, the container will get the union mount of its root file system view under its root mount point. 
+Now we see this file behaves like an important handler for all the union file systems for the container. If this file is missing, one container will not be able to union mount the layered file system.
+
+% --------------
+
+\textbf{Image Layer Content Directory:} Now we have the mount point, and a list of image layer IDs as the addresses for the storage layers. But before a container can start, the Docker daemon needs to know where to find the files inside each image layers. Here comes the directory of
+ \textit{./aufs/diff/<layer ID>/}, which stores all the image layer contents from one specific layer identified by a local image \textit{<layer ID>}. If \textit{<layer ID>} is the same as \textit{<rootfs ID>} of one container, then this directory is where the content of container layer stores, i.e. the container's thin writable layer. 
+
+\textbf{Unified Mount Point:} The directory \textit{/var/lib/docker/0.0/ aufs/mnt/<rootfs ID>/ }  is the root file system mount point of the container. All the image layers are union mounted to this folder and provide a whole file system view for the container. For example, as shown in Figure \ref{fig:aufs}, when a container is created based on a Linux image, its mount point will contain the root directory contents like \textit{/usr/, /home/, /boot }, etc. All those directories are mounted from its underlying layered images. 
+Since this directory is a mount point for a running container's file system, it will be only available when the container is running. If the container stops running, all the image layers will be unmounted from this mount point. So it will become an empty directory.
+
+Here, the SHA256 ID <rootfs ID>  is also an identification image layer ID of the container's thin writable image layer. Since all directories share the same parent dir \textit{/var/lib/docker/0.0}, we will use `.' to represent this common directory in the following sections. 
+
+\textbf{Layer ID Mapping:}  
+Until now, the layer IDs we have discussed above are just local SHA256 IDs, or the so called cache IDs, which are generated dynamically when each image layer is downloaded by `docker pull' command. As we discussed above, from then on, Docker daemon will address the image layer use the cache ID instead of its original layer ID.
+However, we find the Docker storage system still maintains a mapping relationship between the original layer IDs and its cache IDs. This file is \textit{./image/aufs/layerdb/sha256/<O-layerID>/cache-id} shown in Figure~\ref{fig:aufs}.
+It stores the cache ID of the image with original ID <O-layerID>. For example, if a string of \textit{
+fac86d61dfe33f821e8d0e7660473381} is stored in a file path \textit{./image/aufs/layerdb/sha256/
+6384c447ddd6cd859f9be3b53f8b015c/cache-id}, this means there is an image layer with an original ID of \textit{
+6384c447ddd6cd859f9be3b53f8b015c} and it's cache ID is mapped to \textit{
+fac86d61dfe33f821e8d0e7660473381}.
+
+
+% However, due to the active development of Docker community and its relatively young ages of history, there is no available articles illustrating how those original and cache IDs are used and maintained throughout the life cycle of one container, as well as the life cycle of the underlying docker daemon. By investigating into the source code of Docker as well as its storage system, we find out how Docker platform keeps track of those mapping relationship. 
+
+\textbf{Container Configuration and Runtime State:}
+
+At last, there are directories storing the configuration files and runtime data. Figure~\ref{fig:aufs-runtime} shows the runtime data directory stored for each containers. For one container with ID of \textit{<conID>}, there will be one JSON (JavaScript Object Notation)  file \textit{state.json} that stores the run time state of the container. For example, it stores the init pid of the containers' processes with key ``\textit{init\_process\_pid}'', the root file system mount point path with key ``\textit{rootfs}'', as well as the runtime cgroup and namespace meta data, etc.. 
+
+Along with the runtime data directory, there is another directory inside Docker root directory (\textit{/var/lib/docker/0.0}) that stores the configuration data for each container: \textit{./containers/<conID>/} as shown in Figure~\ref{fig:aufs}. For example, \textit{ config.v2.json} file stores the container's creation time, the command that was run when creating the container, etc..
+
+
+% TODO: more details in AUFS. Draw an aufs driver directory structure Figure
+
+%   ├── layers // Metadata of layers
+%   │   ├── 1
+%   │   ├── 2
+%   │   └── 3
+%   ├── diff  // Content of the layer
+%   │   ├── 1  // Contains layers that need to be mounted for the id
+%   │   ├── 2
+%   │   └── 3
+%   └── mnt    // Mount points for the rw layers to be mounted
+%       ├── 1
+%       ├── 2
+%       └── 3

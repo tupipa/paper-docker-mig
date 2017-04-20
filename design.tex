@@ -23,31 +23,8 @@ In this section, we dive into the inner details of Docker container's layered fi
 
 \end{enumerate}
 
+Before we start to discuss our design, we need to first introduce some inner details about Docker and how it manages it's layered storage. Although Docker is becoming more and more popular and widely adopted in the industrial world, the inner details about how it manages the layered storage is still not well-documented. As far as we know, This is the first paper that illustrates the inner details of Docker layered storage and leverage it to speed up the live migration of Docker containers.
 
-
-% Generally, our architecture divides live migration of Docker containers into 5 stages:
-
-% \subsubsection{
-% Synchronize the file system of the container from source host to the target host 
-% } 
-
-% \subsubsection{Checkpoint and stop the running container, which will dump all the memory status of running processes inside the container using tool of CRIU(Checkpoint/Restore In Userspace)\cite{criu}.
-%     % \cite{https://criu.org/Main_Page}
-% }
-    
-% \subsubsection{
-%  Synchronize the file system again to send only the changed files since the last synchronization.
-%  }
- 
-% \subsubsection{
-%  Send the checkpointed memory images to the target Docker host.
-%  }
-% \subsubsection{
-% Restore container on the target Docker host.
-% }
-
-
-Before we start to discuss our design, we first introduce some technical details about Docker and how it manages it's layered storage.
 
 
 \input{docker-intro.tex}
@@ -56,15 +33,15 @@ Before we start to discuss our design, we first introduce some technical details
  
 \subsection{Remapping Image Layers' Identification}
 
-In AUFS addressable layers, the local cached ID for each downloaded image layer is stored in 
+As we introduced above, in the AUFS-based addressable layers, the local cached ID for each downloaded image layer is stored in 
 
-\textit{NOTE: remmapping done. but errors reported when mounting the layers. Need further experiments on how docker mount the layers via AUFS.}
 
 \subsection{Memory Difference Tracking}
 In order to reduce the total memory image size during hand-off, we checkpoint the container and get a snapshot of the container's memory in stage \ref{predump}. The snapshot was transferred before the hand-off starts, just as the application's Docker images, which are also downloaded before the hand-off starts.
 
 Upon the hand-off starts, we checkpoint the container and stop it. Then we do a diff operation on the new memory dump images along with the old snapshot we got from stage \ref{predump}. Then we only need to transfer the difference of the dump memory to the target node. We use Xdelta3 to get the memory difference.
 
+\input{figure/diff_size.tex}
 
 \subsection{Compression of the Transferred Data}
 

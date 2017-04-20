@@ -2,14 +2,15 @@
 
 \begin{table}[!t]
 % increase table row spacing, adjust to taste
-\renewcommand{\arraystretch}{2.1}
+% \renewcommand{\arraystretch}{2.1}
 % if using array.sty, it might be a good idea to tweak the value of
 % \extrarowheight as needed to properly center the text within the cells
 \centering
-\begin{tabular}{|l|l|l|l|l|l|}
+% \begin{tabular}{|l|l|l|l|l|l|}
+\begin{tabular}{|M{1.2cm}|M{0.9cm}|M{0.9cm}|M{1.4cm}|M{1.1cm}|M{0.9cm}|}
 %  \begin{tabular}{|M|M|M|l|l|l|}
 \hline
-App & \pbox{2cm}{Total \\ time}  & \pbox{2cm}{Down\\ time} & \pbox{2cm}{ FS Size } & \pbox{2cm}{ Total Size } & \pbox{2cm}{ network \\ RTT } \\ \hline 
+App & {Total  time}  & {Down time} & { FS Size } & { Total Size } & { network RTT } \\ \hline 
 Busybox & $7.54$ $s$ & $3.49$ $s$ & 140 KB & 290KB &  0.401 ms \\\hline
 OpenFace & $26.19$ $s$ & $5.02$ $s$ & 2.0 GB & 2.17GB &  0.401 ms \\\hline
 \end{tabular}

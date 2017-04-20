@@ -1,0 +1,89 @@
+
+
+% \begin{table}[!t]
+% % increase table row spacing, adjust to taste
+% \renewcommand{\arraystretch}{2.5}
+% % if using array.sty, it might be a good idea to tweak the value of
+% % \extrarowheight as needed to properly center the text within the cells
+% \centering
+% % Some packages, such as MDW tools, offer better commands for making tables
+% % than the plain LaTeX2e tabular which is used here.
+% \begin{tabular}{|l|l|l|l|l|l|}
+% \hline
+% Container & \pbox{20cm}{Total \\ time}  & \pbox{20cm}{Down\\ time} & \pbox{20cm}{ FS\\ tranferred} & \pbox{20cm}{ Total\\ tranferred } & \pbox{20cm}{ network \\ RTT } \\ \hline 
+% Busybox & $10.22s$ & $5.21s$ & ? & ? & 5.41 ms\\\hline
+% OpenFace & $584.34$ $s$ & $89.52s$ & $659$MB & $828$MB & $5.41$ ms\\\hline
+% \end{tabular}
+
+% \caption{Optimized using only compression: Docker Container Migration Time (between two different hosts through Wireless LAN}
+% \label{table_wireless}
+
+% \end{table}
+
+\begin{table}[!t]
+% increase table row spacing, adjust to taste
+\renewcommand{\arraystretch}{2.5}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+\centering
+
+\caption{Optimized using both layered images and compression. Docker Container Migration Time between two Docker hosts running in two VMs on the same host machine.}
+\label{table_samehost_opt}
+
+
+% Some packages, such as MDW tools, offer better commands for making tables
+% than the plain LaTeX2e tabular which is used here.
+% \begin{tabular}{|l|l|l|l|l|l|}
+\begin{tabular}{|M{1.2cm}|M{0.9cm}|M{0.9cm}|M{1.4cm}|M{1.1cm}|M{0.9cm}|}
+\hline
+% Container & \pbox{1.1cm}{Total \\ time}  & \pbox{1.1cm}{Down\\ time} & \pbox{1.1cm}{ FS\\ tranferred} & \pbox{1.1cm}{ Total\\ tranferred } & \pbox{1.1cm}{ network \\ RTT } \\ \hline 
+Container & {Total time}  & {Down time} & { FS tranferred} & { Total tranferred } & { network RTT } \\ \hline
+Busybox & $4.13s$ & $4.10s$ & $14KB$ & $29KB$ & $0.401 ms$\\\hline
+OpenFace & $22.14 s$ & $22.00s$ & $100KB$ & $102.1MB$ & $0.401ms$ \\\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!t]
+% increase table row spacing, adjust to taste
+\renewcommand{\arraystretch}{2.5}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+\centering
+
+\caption{Optimized using both layered images and compression. Docker Container Migration Time between two different hosts connected via Ethernet LAN.}
+\label{table_ethernet_opt}
+
+% Some packages, such as MDW tools, offer better commands for making tables
+% than the plain LaTeX2e tabular which is used here.
+% \begin{tabular}{|l|l|l|l|l|l|}
+\begin{tabular}{|M{1.2cm}|M{0.9cm}|M{0.9cm}|M{1.4cm}|M{1.1cm}|M{0.9cm}|}
+\hline
+Container & {Total time}  & {Down time} & { FS tranferred} & { Total tranferred } & { network RTT } \\ \hline 
+Busybox & $5.24s$ & $4.4s$ & $14KB$ & $29KB$ & $5.41 ms$\\\hline
+OpenFace & $29.93s$ & $?s$ & $101KB$ & $102.1MB$ & $5.41$ ms\\\hline
+\end{tabular}
+
+\end{table}
+
+
+\begin{table}[!t]
+% increase table row spacing, adjust to taste
+\renewcommand{\arraystretch}{2.5}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+\centering
+
+\caption{Optimized using both layered images and compression. Docker Container Migration Time between two different hosts connected via Wireless LAN.}
+\label{table_wireless_opt}
+
+% Some packages, such as MDW tools, offer better commands for making tables
+% than the plain LaTeX2e tabular which is used here.
+% \begin{tabular}{|l|l|l|l|l|l|}
+\begin{tabular}{|M{1.2cm}|M{0.9cm}|M{0.9cm}|M{1.4cm}|M{1.1cm}|M{0.9cm}|}
+\hline
+Container & {Total time}  & {Down time} & { FS tranferred} & { Total tranferred } & { network RTT } \\ \hline 
+Busybox & $7.12s$ & $6.80s$ & $14KB$ & $29KB$ & $5.41 ms$\\\hline
+OpenFace & $60.23s$ & $60.20s$ & $101KB$ & $102.1MB$ & $5.41$ ms\\\hline
+\end{tabular}
+
+\end{table}
