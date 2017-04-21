@@ -1,17 +1,25 @@
+\usepackage{booktabs} % For formal tables
 
-\usepackage{cite}
+
+% \usepackage{cite}
 \usepackage{pbox}
 \usepackage{array}
+
 \newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
 \newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
 \usepackage{amsmath}
 \usepackage{algorithmic}
-\usepackage{array}
+% \usepackage{array}
 \usepackage{graphicx}
 % \usepackage{subfigure}
 % \usepackage{subcaption}
 \usepackage{tikz}
-\usetikzlibrary{arrows, calc, shapes, fit, positioning}
+\usetikzlibrary{positioning, shapes, shapes.geometric, arrows, chains, calc,intersections}
+
+% environ: scale tikzpicture to textwidth
+%   https://tex.stackexchange.com/questions/6388/how-to-scale-a-tikzpicture-to-textwidth
+\usepackage{environ}
+
 % \usepackage{caption}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.12}
@@ -21,19 +29,18 @@
 
 \usepackage{url}
 \usepackage[utf8]{inputenc} 
-\usepackage{fourier} 
+% \usepackage{fourier} 
 
 % \usepackage{enumitem}
 \usepackage[inline, shortlabels]{enumitem}
 % \hyphenation{op-tical net-works semi-conduc-tor}
 
 % http://tex.stackexchange.com/questions/56529/note-below-figure
-\usepackage[capposition=top]{floatrow}
+% \usepackage[capposition=top]{floatrow}
 
 % \usepackage{forest}
  \usepackage[edges]{forest}
- 
-\usetikzlibrary{shapes.geometric}
+
 % \usepackage[T1]{fontenc}
 
 \usepackage{caption}

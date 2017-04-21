@@ -1,0 +1,55 @@
+
+% https://tex.stackexchange.com/questions/350729/software-architecture-picture-in-tikz
+\tikzset{
+    srv/.style  = {draw, rectangle, minimum width=1.8cm, 
+    minimum height=2cm, 
+    text depth=2cm,
+    text centered, 
+    inner sep=1, 
+    text width=2.0cm, font=\footnotesize,
+    draw=black, 
+    fill=blue!30},
+    % https://tex.stackexchange.com/questions/6899/tikz-multi-line-text-in-the-node-description
+    conNode/.style   = {draw, rectangle, minimum width=1.6cm, minimum height=1cm, text centered, text width=1.5cm, font=\footnotesize, draw=black,
+    fill=yellow!30 
+    % fill=white
+    },
+    dockerNode/.style = {draw, rectangle, minimum width=1.6cm, minimum height=0.5cm, text centered, text width=1.5cm, font=\footnotesize, draw=black, fill=yellow!30
+    },
+    cloudNode/.style = {draw,
+    cloud, 
+    cloud puffs=15.7, 
+    cloud ignores aspect, 
+    minimum width=1.5cm,
+    minimum height=0.5cm, 
+    align=center,
+    fill=white
+    },
+}
+\begin{figure}
+%  https://tex.stackexchange.com/questions/115087/how-can-i-embed-an-external-image-within-a-tikzpicture-environment
+% https://tex.stackexchange.com/questions/91320/arrows-from-cloud-cross-the-outer-line
+% \begin{scaletikzpicturetowidth}{\textwidth}
+% \begin{tikzpicture}[thick,scale=0.8, every node/.style={scale=0.8}]
+% \coordinate (cloudco) at (0,1.5);
+% \coordinate (serverAco) at (0,3.5);
+% \coordinate (serverBco) at (2.5,3.5);
+% \coordinate (clientco) at (0.8,0);
+% % \draw[->] (cloudco) -- (90:2);
+% % server node A
+% \node [name=srvA, srv,draw] at (serverAco) {Server A};
+% \node [name=conA, conNode] at (srvA.center) {Offloading Container};
+% \node [name=dockerA,dockerNode] at ([yshift=1em]srvA.south) {Docker};
+% % draw line arrow from client to serverA
+% \draw[->] (clientco) -- (dockerA.south);
+% % server node B
+% \node [name=srvB, srv] at (serverBco) {Server B};
+% \node [name=dockerB,dockerNode] at ([yshift=1em]srvB.south) {Docker};
+% \node (phone) at (clientco)
+%     {\includegraphics[width=.01\textwidth]{figure/fig.jpg}};
+% \node[cloudNode] (cloud) at (cloudco) {WAN};
+% \draw[->] (phone) -- node[above]{moving} ++ (\textwidth/2,0);
+% \end{tikzpicture} 
+\caption{ Offloading Service Handoff Implementation. }
+\label{fig:migstages}
+\end{figure}

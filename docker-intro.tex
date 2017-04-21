@@ -1,4 +1,19 @@
 
+\subsection{Docker Platform and Container Live Migration}
+
+% As a container engine, Docker is increasingly popular in industrial cloud platform. 
+Docker serves as an composing engine for Linux containers, where applications are running in an isolated environment based on OS-level virtualization. Docker enables layered storage inside containers, which allows fast packaging and shipping of any application as a lightweight container. Each Docker image references a list of read-only layers that represent filesystem differences. Layers are stacked on top of each other to form a base for a container’s root filesystem \cite{dockerlayer}. 
+
+This layered storage allows fast live migration of containers' run-time states without having to transfer the system and application base images. With the cloud storage of container images (like in DockerHub), all the container images are available anywhere across the Internet. Therefore, before any live migration starts, any edge server has the chance to download the system and application images as the base images stack for the container to run on. 
+During the migration, we only need to transfer the run-time memory states and the thin container layer on top of the Docker images stack. 
+
+Apparently, the live migration of the Docker containers is a better choice than the virtual machine based approaches we introduced above. The layered storage in Docker infrastructure enlightens a great opportunity for the service hand-off based on the container live migration. If the live migration of containers can be done very fast, we can have the near seamless offloading service hand-off across the adjacent edge servers.
+
+However, until the paper is written there is no tools that could leverage Docker's layered images to lively migrate containers. 
+% In order to do this, we must fist dive into the images layers underlying containers and avoid the transfer of application images stack. That is just transfer the ``container layer''. 
+
+
+
 \subsection{Docker Layered Storage Management}\label{aufsIntroduction}
 
 As we mentioned above, Docker use layered storage for its containers. Each Docker image references a list of read-only layers that represent file system differences. Layers are stacked on top of each other to form a base for a container’s root filesystem \cite{dockerlayer}. 
@@ -90,8 +105,8 @@ However, we find the Docker storage system still maintains a mapping relationshi
 It stores the cache ID of the image with original ID <O-layerID>. For example, if a string of \textit{
 fac86d61dfe33f821e8d0e7660473381} is stored in a file path \textit{./image/aufs/layerdb/sha256/
 6384c447ddd6cd859f9be3b53f8b015c/cache-id}, this means there is an image layer with an original ID of \textit{
-6384c447ddd6cd859f9be3b53f8b015c} and it's cache ID is mapped to \textit{
-fac86d61dfe33f821e8d0e7660473381}.
+6384c447-ddd6cd859f9be3b53f8b015c} and it's cache ID is mapped to \textit{
+fac86d61df-e33f821e8d0e7660473381}.
 
 
 % However, due to the active development of Docker community and its relatively young ages of history, there is no available articles illustrating how those original and cache IDs are used and maintained throughout the life cycle of one container, as well as the life cycle of the underlying docker daemon. By investigating into the source code of Docker as well as its storage system, we find out how Docker platform keeps track of those mapping relationship. 

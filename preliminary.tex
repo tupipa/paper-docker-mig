@@ -1,0 +1,43 @@
+
+In this section, we dive into the inner details of Docker container's layered storage system and show which part of the file system is necessary to be transferred during live migration. 
+% Before we start to discuss our design, we need to first introduce some inner details about Docker and how it manages it's layered storage. 
+Although Docker is becoming more and more popular and widely adopted in the industrial world, the inner details about how it manages the layered storage is still not well-documented. As far as we know, This is the first paper that illustrates the inner details of Docker layered storage and leverage it to speed up the live migration of Docker containers.
+
+
+\input{docker-intro.tex}
+
+
+
+\subsection{Docker Container Live Migration in Practice }
+
+Although there is no official live migration tools for Docker containers yet, many enthusiastic developers have composed some customized tool for some versions of Docker platform, which shows great feasibility of Docker containers' live migration. For example, Ross Boucher's fork \cite{boucherPhaul} of P.haul
+% \cite{phaul}
+can be used for live migration of Docker containers for Docker 1.10-dev. However, after investigation, we found it doesn't leverage the layered images of Docker containers. It simply transfers all the file system of that container from source server to the target server, where the files are actually composed by all the image layers of that container. This made the tool not feasible and will crash the layered file system on the target Docker platform. Firstly, transferring all the image layers at once made the live migration process pretty slow for applications that has big file systems. 
+
+To verify our claim, we conducted experiments to live migrate containers through different network connections using this tool. We experiments on one simple container, busybox, and two applications for edge server offloading: OpenFace and ?.  Busybox is a stripped-down Unix tools in a single executable file. It has very tiny file system inside the container. OpenFace\cite{openface2016} is an application that will ship images from mobile device to the edge server, then execute the face recognition algorithm on server, and finally sending back a text string of the name of the person to the mobile device. The file system is huge for this container, which is approxmitely $2$ gigabytes.
+
+Table~\ref{table_samehost} shows the live migration could be done within 10 seconds for busybox and with 30 seconds for OpenFace. The two nodes are two virtual machines on the same physical host. The network bandwidth is high with just an RTT of 0.4 milliseconds, which allows to transfer 2.17 GB data within a short time.
+
+\input{figure/table-phaul.tex}
+
+However, when we live migrate containers between two physical host on the same LAN network, the performance is reduced dramatically. Table~\ref{table_wireless} shows that the migration of the busybox container will take 133.11 seconds with just 152 kilobytes of transferred size. And for the heavy offloading application of OpenFace, it cost about 3200 seconds with transferred sized of more than 2 Gigabytes. After investigation into its detailed steps of live migration, we found it didn't make use of the layered infrastructure. Instead of transfering only the thin container layer modified inside the container, it transfers the whole file system including all the stacked image layers of the container, which is definitely not a proper way to migrate Docker containers.  This behavior would cause severe problems from several aspects:
+% \begin{enumerate}[series = tobecont , itemjoin = \quad]
+\begin{enumerate}[series = tobecont]
+    \item It will corrupt the layered file system inside the container after restored  on the target server. The tools just transfer the whole file system into one directory on the destination server and mount it as root directory for the container. After restored on the target host, the container no longer maintains its layered image stacks as on the source node. 
+    \item It dramatically reduces the efficiency of live migration. The transferring size of live migrating a container with its whole file system would just worse than a mature VM live migration. Because even live migration could avoid transferring the whole file system by sharing the base VM images as shown in \ref{motivation:vmhandoff}. 
+\end{enumerate}
+Therefore, we need a new tool for live migrating the Docker containers that could leverage the layerred file systems and avoid the transmisssion of common image layer stack by just transferring the \textit{container layer}.
+
+% \subsection{Docker Layered Images }
+
+% As a container engine, Docker is increasingly popular in industrial cloud platform. It serves as an composing engine for Linux containers, where applications are running in an isolated environment based on OS-level virtualization. Docker enables layered storage inside containers, which allows fast packaging and shipping of any application as a lightweight container. Each Docker image references a list of read-only layers that represent filesystem differences. Layers are stacked on top of each other to form a base for a container’s root filesystem \cite{dockerlayer}. 
+% % \cite{https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#images-and-layers}
+
+% When a new container is started, a new, thin, writable layer, called \textit{``container layer''} is created on top of the underlying stack. All changes made to the running container are written to this thin layer. 
+% % It greatly simplifies the process of setting environment for any software platform. 
+
+% This layered storage allows fast live migration of containers' run-time states without having to transfer the system and application base images. With the cloud storage of container images (like in DockerHub), all the container images are available anywhere across the Internet. Therefore, before any live migration starts, any edge server has the chance to download the system and application images as the base images stack for the container to run on. 
+% During the migration, we only need to transfer the run-time memory states and the thin container layer on top of the Docker images stack. 
+
+
+% Apparently, the live migration of the Docker containers seems to be a better choice than the virtual machine based approaches we introduced above. The layered storage in Docker infrastructure enlightens a great opportunity for the service hand-off in edge computing. If the live migration of containers can be done very fast, we can have the service hand-off built ontop of it to get high speed hand-off.

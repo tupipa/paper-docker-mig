@@ -1,42 +1,54 @@
 
-In this section, we dive into the inner details of Docker container's layered file system and show our design of the  service hand-off framework based on live migration of the containers.  Generally, our architecture supports high speed offloading service hand-off through the following stages:
+In this section, we introduce our design of the  service hand-off framework based on live migration of the containers. 
+
+\subsection{System Overview}
+
+\input{figure/figure-before-after.tex}
+
+
+Figure~\ref{fig:before-after} shows the status of offloading services before and after migration. Before migration, mobile client offloads its computations to its nearest edge server \textbf{A}, where all the computations are processed inside a Docker container. When the mobile client moves far away from server \textbf{A} and reaches the service area of edge server \textbf{B}, it's offloading computation will be migrated from server \textbf{A} to server \textbf{B}. This is done via migration of its offloading Docker containers, where all the runtime memory states as well as its storage layer are transferred to server \textbf{B}.
+
+
+\input{figure/figure-migration-stages.tex}
+
+
+As shown in Figure~\ref{fig:migstages},
+% shows the overview of the whole migration stages. Generally, 
+our architecture supports high speed offloading service hand-off through the following steps:
 % \begin{enumerate*}[series = tobecont, itemjoin = \quad]
 
 \begin{enumerate}[label=\textbf{S\arabic*}]
 
-\item Dynamically predict the possible target servers and pre-download the offloading application's Docker images on each target servers.
+\item \label{predownload}\textbf{Pre-download Application Image.} In this stage, we will dynamically predict the possible target edge servers and pre-download the offloading application's Docker images on each target servers.
 
-\item \label{predump} Checkpoint the container's memory and keep the container running. At the same time, send checkpointed memory images to the target servers. 
+\item \label{predump} \textbf{Pre-dump Container.} Before we received the migration request, we will try to dump a snapshot of the container's runtime memory and send to the possible target edge servers we found in stage \ref{predownload}. The container is still running during this stage. 
 
-\item \label{prepare} Upon receiving the hand-off request to a certain target server, prepare for file system synchronization by remapping the image layers' local identifications on the target server.
+\item \label{prepare} \textbf{Remapping Layer Cache IDs.} Upon receiving the hand-off request to a certain target server, prepare for file system synchronization by remapping the image layers' local identifications on the target server.
 
 % \item \label{firstsync} Upon receiving migration request, compress the thin container layer and send to target.
 
-\item \label{checkpoint} Checkpoint and stop the container. From this point the container will stop running on the source server and waiting to be restored on the target server.
+\item \label{checkpoint} \textbf{Checkpoint and Stop Container.} After we remapped the layer IDs according the shared original layer IDs between source and target edge servers, we then could checkpoint and stop the container in order to send all the latest run-time states to the target edge server.
+From this point the container will stop running on the source server and waiting to be restored on the target server.
 
-\item \label{img-sync} Get the different of checkpointed memory images between \ref{predump} and \ref{checkpoint}, and send the difference to the target server. 
+\item \label{fs-sync} \textbf{Final FS Synchronization} After checkpointed the container, the file system will not be changed. In this step, we will send the container layer's contents to the target server. At the same time, all the checkpointed runtime states and configuration files, such as \textit{state.json, config.v2.json, etc.} are also transferred to the target server. 
 
-\item \label{fs-sync} Compress and send the thin container layer to the target host.
+\item \label{daemon-Reload} \textbf{Docker Daemon Reload} After we send all the runtime state and configuration files to the target node, Docker daemon on the target node still cannot recognize the container immediately.  This is because those runtime state and configuration files are created by another Docker daemon on source node, the daemon on target node doesn't have those configurations loaded into its runtime database. So we need to reload the Docker daemon in order to reload those runtime state and configuration files it just received from the source node.
+
+\item \label{img-sync} \textbf{Get Memory Difference.} After we get checkpointed images from the final dump of the container, we then compare this final dump memory to the pre-dumped memory in stage \ref{predump}. We then could get the memory difference and send only these difference to the target server. 
 % \item \label{finalsync} Synchronize the file system for the last time, updating only the changed files of the container layer before last synchronization in \ref{firstsync}.
 
 \item \label{restore} Restore container on the target host.
 
 \end{enumerate}
 
-Before we start to discuss our design, we need to first introduce some inner details about Docker and how it manages it's layered storage. Although Docker is becoming more and more popular and widely adopted in the industrial world, the inner details about how it manages the layered storage is still not well-documented. As far as we know, This is the first paper that illustrates the inner details of Docker layered storage and leverage it to speed up the live migration of Docker containers.
-
-
-
-\input{docker-intro.tex}
 
 % (Before migration, both the source and target edge server have the application base images downloaded.)
  
-\subsection{Remapping Image Layers' Identification}
+\subsection{Match Shared Image Layers}
 
 As we introduced above, in the AUFS-based addressable layers, the local cached ID for each downloaded image layer is stored in 
 
-
-\subsection{Memory Difference Tracking}
+\subsection{Get Memory Difference}
 In order to reduce the total memory image size during hand-off, we checkpoint the container and get a snapshot of the container's memory in stage \ref{predump}. The snapshot was transferred before the hand-off starts, just as the application's Docker images, which are also downloaded before the hand-off starts.
 
 Upon the hand-off starts, we checkpoint the container and stop it. Then we do a diff operation on the new memory dump images along with the old snapshot we got from stage \ref{predump}. Then we only need to transfer the difference of the dump memory to the target node. We use Xdelta3 to get the memory difference.
@@ -57,6 +69,9 @@ The container writable layer and meta data files are regular files in the storag
 
 The dump memory images are binary data, which is not efficient to compressed using bzip2. So we use ??? to compress and send via ssh connections.
 
+\subsection{Pipelined \& Parallel Processing}
+
+
 % \ref{predump}, \ref{img-sync}.
 
 % For the root file system and meta data files. We have two stages of files synchronization before and after the container was checkpoints. The first synchronization in \ref{firstsync} will transfer the base file system for the container layer, so it's better to compress it. We use 'tar' command to compress and sent via SSH. For the final synchronization of the file system, since we already have most of the files transferred, we choose to use 'rsync' to send over only the changed files.
@@ -67,7 +82,7 @@ The dump memory images are binary data, which is not efficient to compressed usi
 
 % \url{http://unix.stackexchange.com/questions/30953/tar-rsync-untar-any-speed-benefit-over-just-rsync}
 
-TODO: more details about compression and synchronization: more memory images compression techniques (to replace tar cmd). 
+% TODO: more details about compression and synchronization: more memory images compression techniques (to replace tar cmd). 
 
-TODO: rsync vs. tar comparison
+% TODO: rsync vs. tar comparison
 
