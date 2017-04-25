@@ -1,6 +1,48 @@
 
 TODO one large table here:
 
+\begin{table}[h]
+\centering
+\begin{tabular}{|P{3.5em}|P{2em}|P{3em}|P{2.8em}|P{3.5em}|P{3.5em}|}
+\hline
+\multicolumn{2}{|P{5em}|}{Bandwidth (Mbps)} &  Handoff Time(s) & Down Time(s) & Pre-Transfer Size & Final-Transfer Size \\                \hline
+\multirow{13}{*}{Busybox} 
+ &5     &3.90  & 3.23  & & c\\
+ &15    &X  &   & c &c \\
+ &20    &x  &x  & c &c \\
+ &25    &x  &x  & c &c \\
+ &30    &x  &x  & c &c \\
+ &35    &x  &x  & c &c \\
+ &40    &x  &x  & c &c \\
+ &45    &x  &x  & c &c \\
+ &50    &x  &x  & c &c \\
+ &100    &x  &x  & c &c \\
+ &200    &x  &x  & c &c \\
+ &500    &x  &x  & c &c \\
+ &1000    &x  &x  & c &c \\\cline{1-6}
+\multirow{13}{*}{Busybox}
+ &5     &n  &   & c &c \\
+ &15    &X  &   & c &c \\
+ &20    &x  &x  & c &c \\
+ &25    &x  &x  & c &c \\
+ &30    &x  &x  & c &c \\
+ &35    &x  &x  & c &c \\
+ &40    &x  &x  & c &c \\
+ &45    &x  &x  & c &c \\
+ &50    &x  &x  & c &c \\
+ &100    &x  &x  & c &c \\
+ &200    &x  &x  & c &c \\
+ &500    &x  &x  & c &c \\
+ &1000    &x  &x  & c &c \\\cline{1-6}
+\end{tabular}
+    \caption{
+        Average of 10 runs and relative standard deviations (RSDs, in parentheses) are reported. 
+        Handoff time is from the time the server receives migration request until migration done; 
+        The down time is the time from the container is checkpointed to the container is restored on the target.
+    }
+    \label{tab:perform}
+\end{table}
+
 --------------------------------------
 
 bandwidth/app   migration time / down time  /  FS size / Image size

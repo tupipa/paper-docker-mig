@@ -18,26 +18,32 @@ The laptop is with Intel$^{R}$ Core$^{TM}$ i5-2450M CPU (2.5GHz, 2 cores, 4 thre
 
 
 
-\input{figure/table-optimized.tex}
+\input{figure/evaluations/table-optimized.tex}
 
-\begin{figure}[tb!]
-    \centering
-    \includegraphics[width=0.48\textwidth]
-    % {figure/test-tarssh.eps}
-    {figure/predump-docker-tarssh.eps}
-    \caption{Time of Container Migration Stages without pipeline}
-    \label{fig:nopipe}
-\end{figure}
+\input{figure/evaluations/figure-latency.tex}
 
-\begin{figure}[tb!]
-    \centering
-    \includegraphics[width=0.48\textwidth]
-    % {figure/test-tarssh.eps}
-    {figure/predump-docker-pipe.eps}
+\input{figure/evaluations/figure-pipes.tex}
+
+% \begin{figure}[tb!]
+%     \centering
+%     \includegraphics[width=0.48\textwidth]
+%     % {figure/test-tarssh.eps}
+%     {figure/evaluations/compare-pipe-nopipe-busybox.eps}
+%     \caption{Busybox: Time of Container Migration Stages with and without pipeline. }
+%     \label{fig:nopipe}
+% \end{figure}
+
+% \begin{figure}[tb!]
+%     \centering
+%     \includegraphics[width=0.48\textwidth]
+%     % {figure/test-tarssh.eps}
+%     {figure/evaluations/compare-pipe-nopipe-face.eps}
     
-    \caption{Time of Container Migration Stages with pipeline}
-    \label{fig:pipe}
-\end{figure}
+%     \caption{Time of Container Migration Stages with and without Pipelined Processing
+%     % Pipelined Processing of ImgDiff, ImgSend, and MemApply 
+%     }
+%     \label{fig:pipe}
+% \end{figure}
 
 
 % TODO :

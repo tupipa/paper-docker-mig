@@ -1,0 +1,69 @@
+In this section, we further discuss the motivations by answering
+questions: why edge applications need computation offloading, why we need  
+service handoff in edge computing, why we need live migration for service handoff, and why we want to do service handoff via container live migration.
+
+\subsection{Emerging Applications in Edge Computing Call For Computation Offloading}
+
+With the advancement of edge computing, many researchers have developed various kinds of applications to take the advantages of the high data rate and low latency via the edge computing platforms. 
+One example of such services is Augmented Reality (AR), where application on a mobile device overlays augmented reality content
+onto objects viewed on the device's camera and edge servers can
+provide local object tracking and local AR content caching
+\cite{satya2009case,MEC2014initiative,MEC2015-5G,hao2017challenges}.
+% The solution minimizes round trip time and maximizes throughput for optimum quality of experience. 
+% It can be used to offer consumer or enterprise propositions, such as tourist information, sporting event information, advertisements etc.
+%
+% Sataya Gabriel 
+Gabriel platform \cite{ha2014wearable}  was proposed with in the contexts of wearable cognitive assistance applications using a Glass-like wearable device, such as Lego Assistant, Drawing Assistant, Ping-pong Assistant.%,  and Assistance from Crowd-sourced Videos. 
+Those applications react to a user's actions in real time with predefined guidance or guidance from crowd-sourced videos. 
+%
+%
+% openface
+OpenFace\cite{openface2016} is a real-time face recognition application for mobile scenarios that offers high accuracy with low training and prediction times. Mobile clients send the captured pictures from the camera to its nearest server. The server runs face recognition task with deep neural networks and send the feedback to mobile clients in real time.  
+More edge applications can be found in \cite{yi2015fog,yi2015survey,satya2017edge}.
+
+All the above applications need to offload workloads with intensive computation, such as computer vision and signal processing, to the edge server in order to get response in real time. However, there are challenges before we can pragmatically deploy computation offloading in edge computing architectures. 
+
+\subsection{Effective Edge Offloading Needs Seamless Handoff}
+
+As we have mentioned, most edge applications can greatly benefit from offloading its heavy operators to the edge. However, the real time responsive service largely relies on the relative near distance to the edge servers under a WAN network. When the mobile client moves far away from its current edge server, offloading performance bonus will be diminished dramatically.
+Therefore effective edge offloading needs to mobility support.
+
+In the centralized cloud infrastructure, mobility of clients can be well supported since the cloud server is always connected by clients through the long latency WAN internet. However, in the edge computing infrastructure, mobile devices are connected to the nearby edge server within its limited network coverage scope. Therefore, when the mobile device moves out of  the edge server's coverage, it might be out of service, or alternatively, it has to ``handoff'' from the current edge server to a nearer edge server. 
+This is an analogy to the \textit{seamless hand-off or hand-over } mechanism in the cellular networks, where the moving client can seamlessly hand-off across base stations and be served by its nearest available station. 
+
+Therefore one of the primary needs for edge computing is to enable the free mobility for the offloading computations on the edge servers along with the mobile devices via seamless handoff.
+
+
+\subsection{Seamless Edge Handoff via Live Migration}
+
+However, there exists one key difference between the cellular network hand-off and edge server hand-off.
+%
+In cellular networks, changing a base station for a client is as simple as rebuilding a wireless connection. Most of the run-time states of the services are still available either on the client or on the remote server. After re-connection, the run-time state can be quickly seamlessly resumed. 
+%
+In the edge infrastructure, most mobile devices are using edge server to offload the resource-hungry or computation-intensive computations. This means that the edge server needs to hold the states of all those resource intensive workloads. 
+In our mobile hand-off from one edge server to another, just rebuilding the connection is certainly not enough. Since all the offloaded workloads are also need to be transferred from the current edge server to the next edge server.  
+
+One possible solution is to use the live migration\cite{vmlivemig} to migrate a virtual machine from on edge server to another in order to seamlessly transfer the offloading workloads. However, this approach is already shown to be not suitable for edge computing environment in  \cite{ha2015vmhandoff}. This is because live migration is originally designed for high performance data centers with high bandwidth network. However, this is not possible for edge servers which are deployed on the edge network over the WAN. Furthermore, live migration relies on shared storage so that it transfers only run-time state and doesn't transfer the disk storage data. Apparently, shared storage across the edge computing infrastructure is not feasible due to its widely distributed nature and low bandwidth across WAN. 
+
+In order to enable hand-off across edge computing servers, many researches have been done based on virtual machine ~\cite{satya2009case,ha2015vmhandoff}. 
+However,
+the total hand-off time was still several minutes on a WAN network. For example, it will requires $245.5$ seconds to migrate a running OpenFace instance under 5Mbps bandwidth (50ms latency) network in \cite{ha2015vmhandoff}. 
+
+One of the reasons for the long latency of handoff the large image size we need to transfer. Although the VM synthesis could reduce the image size by splitting images into multiply layers and only transfer the application-specific layer, the total transferred size is still in the magnitude of tens of megabytes and even hundreds of megabytes. 
+The application layer was encapsulated with the whole application, both its static binary programs and its runtime memory data, which we think is an unnecessary cost. 
+
+On the other hand, the deployment of the VM synthesis system is challenging for the legacy system. In order to enable VM synthesis, the hypervisor of VMs need to be patched to track the dirty memory at runtime. Also the storage of VM images need to be adapted to Linux FUSE interfaces in order to track file system changes inside the running VMs. Those two changes are hard to deploy in practice since they changes the behavior of hypervisors and file systems of the legacy platform and will also cause lots of performance overhead. 
+
+
+\subsection{Why We Need Live Migration of Container}
+Since VM live migration posts significant performance pressure for seamless handoff of edge services, the container-based live migration has gained attractions in building efficient edge computing systems. % here we can cite quite a lot papers.
+% As a container engine, Docker is increasingly popular in industrial cloud platform. 
+Docker\footnote{Through out paper, we use Docker as our container engine.} as an composing engine for Linux containers, where applications are running in an isolated environment based on OS-level virtualization. Docker enables layered storage inside containers, which allows fast packaging and shipping of any application as a lightweight container. Each Docker image references a list of read-only layers that represent filesystem differences. Layers are stacked on top of each other to form a base for a container’s root filesystem \cite{dockerlayer}. 
+
+This layered storage allows fast live migration of containers' run-time states without having to transfer the system and application base images. With the cloud storage of container images (like in DockerHub), all the container images are available anywhere across the Internet. Therefore, before any live migration starts, any edge server has the chance to download the system and application images as the base images stack for the container to run on. 
+During the migration, we only need to transfer the run-time memory states and the thin \textit{container layer} on top of the Docker images stack. 
+
+Apparently, the live migration of the Docker containers is a better choice than the virtual machine based approaches we introduced above. The layered storage in Docker infrastructure enlightens a great opportunity for the service hand-off based on the container live migration. If the live migration of containers can be done very fast, we can have the near seamless offloading service hand-off across the adjacent edge servers.
+
+However, at the time this paper is written, there is no tool that can leverages Docker's layered images to lively migrate containers. 
+% In order to do this, we must fist dive into the images layers underlying containers and avoid the transfer of application images stack. That is just transfer the ``\textit{container layer}''. 

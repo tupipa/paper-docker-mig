@@ -84,7 +84,7 @@
     fill=white
     },
 }
-\begin{figure*}
+\begin{figure*}[th!]
 %  https://tex.stackexchange.com/questions/115087/how-can-i-embed-an-external-image-within-a-tikzpicture-environment
 % https://tex.stackexchange.com/questions/91320/arrows-from-cloud-cross-the-outer-line
 \begin{tikzpicture}[thick, 
@@ -92,7 +92,7 @@
 % scale=0.8, every node/.style={scale=0.8}
 ]
 \coordinate (cloudco) at (3.5,1.5);
-\coordinate (dockerHubco) at (8.5,6.5);
+\coordinate (dockerHubco) at (8.8,6.5);
 \coordinate (serverOtherco) at (11,4);
 \coordinate (serverAco) at (0,1);
 \coordinate (serverBco) at (7,1);
@@ -135,7 +135,7 @@
 % \node[ bigcloudNode] (dockerhub) at (dockerHubco) {Docker Hub};
 % % notes under Docker hub
 % \node[anchor=center, below = of dockerhub] {
-% \ref{predownload}. Pre-Download Images
+% \ref{prepare}. Pre-Download Images
 % };
 
  
@@ -158,7 +158,7 @@ bend right,
 node[black, 
 % sloped, 
 anchor=center, above] {
-% \ref{predownload}. Download Images
+% \ref{prepare}. Download Images
 }
 (aufsB.north);
 
@@ -168,7 +168,7 @@ bend left, ->] (dockerHubco) to
 node[black, 
 % sloped,
 anchor=center, above] {
-% \ref{predownload}. Download Images
+% \ref{prepare}. Download Images
 }
 (serverOther.north);
 
@@ -177,7 +177,7 @@ anchor=center, above] {
 \node[ bigcloudNode] (dockerhub) at (dockerHubco) {Docker Hub};
 % notes under Docker hub
 \node[anchor=center, below = of dockerhub, text width = 3cm, yshift=2em, xshift=1em] {
-\ref{predownload}. Pre-Download Images
+\ref{prepare}. Pre-Download Images
 };
 
 
@@ -194,29 +194,32 @@ dashed, ->]
 node[below, black
 % , text width=2cm
 ]{\ref{img-sync}.
-Memory Difference
+Send Memory Difference
 }
 ([yshift=2.3em]conB.west);
 
 % pre dump mem on A
 \draw[<-] 
-([xshift=-2.5em]dockerA.north) 
+([xshift=-3em]dockerA.north) 
 -- 
-node[black, left,text width=2cm,align=left
+node[black, left ,text width=3cm, align=center, yshift=0.5em
 % , text width=2cm
 ]{
 \ref{predump}.Pre-dump
 \\
 \ref{checkpoint}. Final Dump
+\\
+\ref{img-sync}.
+Get Memory Difference
 } 
-([xshift=0em]conA.south);
+([xshift=-0.5em]conA.south);
 
 
 
 % request migration
 \draw[->] ([xshift=2em]clientAco) -- 
 node[right, black]{
-\ref{prepare}. Migration Request
+\ref{request}. Migration Request
 }
 ([xshift=2em]srvosA.south);
 
@@ -227,7 +230,7 @@ node[right, black]{
 % green, 
 dashed, ->] ([yshift=0em]aufsA.east) -- 
 node[above, black]{
-\ref{prepare}. Match Image Layers
+\ref{prepare}. Base Image Layers Sync
 }
 node[below, black]{
 \ref{fs-sync}. Container Layer Sync
@@ -236,14 +239,16 @@ node[below, black]{
 
 % ID remapping on source
 \draw[<->] 
-([xshift=2.8em]dockerA.north) 
+([xshift=1.8em]dockerA.north) 
 -- 
-node[black, right,text width=2cm,align=left
+node[black, right,text width=3cm,align=left
 % , text width=2cm
 ]{
 \ref{prepare}. ID Remapping
+\\
+\ref{prepare}. Create Base Img Layers
 } 
-([xshift=0em]aufsA.south);
+([xshift=-1em]aufsA.south);
 
 % ID remapping & reload daemon on target
 \draw[<->] 
@@ -271,7 +276,7 @@ align=left
 ]{
 \ref{img-sync}. Apply Memory Difference
 \\
-\ref{restore}. ID Remapping
+\ref{restore}. Restore Container
 } 
 ([xshift=-1.5em]conB.south);
 
