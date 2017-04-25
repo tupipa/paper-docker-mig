@@ -11,6 +11,7 @@ Based on the work of VM synthesis, VM handoff across Cloudlet servers (alias of 
 Additionally, it also uses compression, pipelined processing to reduce transfer time and algorithms to adapt to different network conditions.
 Finally, it highly reduced the transferred size and migration time under WAN network environments.
 
+While significant efforts have been invested in to VM synthesis and hand-off, the performance cannot meet the requirements of offloading services in edge computing environments, given the mobility of clients, dominance of wireless access, geographical distribution of edge nodes, and real-time interaction requirement. Instead,  our work is along the line of container, a lightweight OS-level virtualization technique, and focus on the live migration of container. 
 % However,
 % % the transfer size of the application still had tens or hundreds of megabytes on average. 
 % the total hand-off time was still several minutes on a WAN network. For example, it will requires $245.5$ seconds to migrate a running OpenFace instance under 5Mbps bandwidth (50ms latency) network in \cite{ha2015vmhandoff}. 
@@ -55,7 +56,7 @@ For LXC containers, the live migration is implemented in Qiu's thesis work \cite
 
 For Docker containers, there is a sample migration support in P.Haul's source code, which supports only an older version of docker-1.9.0-dev. And it's also extended by Ross Boucher to support docker-1.10-dev. However, as we will discussed in section \ref{migpractice}, we find this implementation will also transmit the entire file system for that container, regardless of the layered storage of Docker platform, which will make the migration vital slow in the edge of WAN network. 
 
-Therefore, in this paper, we investigate the inner details of Docker storage in order to find out how to leverage the layered storage of Docker platform during the migration and avoid the transfer of unnecessary docker images. 
+Therefore, in this paper, we dive into the inner details of Docker storage in order to find out how to leverage the layered storage of Docker platform during the migration and avoid the transfer of unnecessary docker images. 
 
 %  a lightweight universal runtime container. runC is a low-level container runtime and an implementation of the Open Container Initiative specification. runC exposes and expects a user to understand low-level details of the host operating system and configuration.
 

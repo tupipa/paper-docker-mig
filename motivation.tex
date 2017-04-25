@@ -4,7 +4,7 @@ service handoff in edge computing, why we need live migration for service handof
 
 \subsection{Emerging Applications in Edge Computing Call For Computation Offloading}
 
-With the advancement of edge computing, many researchers have developed various kinds of applications to take the advantages of the high data rate and low latency via the edge computing platforms. 
+With the rapid development of edge computing, many researchers have built various kinds of applications to take the advantages of the high data rate and low latency via the edge computing platforms. 
 One example of such services is Augmented Reality (AR), where application on a mobile device overlays augmented reality content
 onto objects viewed on the device's camera and edge servers can
 provide local object tracking and local AR content caching
@@ -58,12 +58,12 @@ On the other hand, the deployment of the VM synthesis system is challenging for 
 \subsection{Why We Need Live Migration of Container}
 Since VM live migration posts significant performance pressure for seamless handoff of edge services, the container-based live migration has gained attractions in building efficient edge computing systems. % here we can cite quite a lot papers.
 % As a container engine, Docker is increasingly popular in industrial cloud platform. 
-Docker\footnote{Through out paper, we use Docker as our container engine.} as an composing engine for Linux containers, where applications are running in an isolated environment based on OS-level virtualization. Docker enables layered storage inside containers, which allows fast packaging and shipping of any application as a lightweight container. Each Docker image references a list of read-only layers that represent filesystem differences. Layers are stacked on top of each other to form a base for a container’s root filesystem \cite{dockerlayer}. 
+Docker\footnote{Through out paper, we use Docker as our container engine implicitly.} as an composing engine for Linux containers, where applications are running in an isolated environment based on OS-level virtualization. Docker enables layered storage inside containers, which allows fast packaging and shipping of any application as a lightweight container. Each Docker image references a list of read-only layers that represent filesystem differences. Layers are stacked on top of each other to form a base for a container’s root filesystem \cite{dockerlayer}. 
 
 This layered storage allows fast live migration of containers' run-time states without having to transfer the system and application base images. With the cloud storage of container images (like in DockerHub), all the container images are available anywhere across the Internet. Therefore, before any live migration starts, any edge server has the chance to download the system and application images as the base images stack for the container to run on. 
 During the migration, we only need to transfer the run-time memory states and the thin \textit{container layer} on top of the Docker images stack. 
 
 Apparently, the live migration of the Docker containers is a better choice than the virtual machine based approaches we introduced above. The layered storage in Docker infrastructure enlightens a great opportunity for the service hand-off based on the container live migration. If the live migration of containers can be done very fast, we can have the near seamless offloading service hand-off across the adjacent edge servers.
 
-However, at the time this paper is written, there is no tool that can leverages Docker's layered images to lively migrate containers. 
+However, at the time this paper is written, there is no tool that can leverages Docker's layered images to live migrate containers efficiently. 
 % In order to do this, we must fist dive into the images layers underlying containers and avoid the transfer of application images stack. That is just transfer the ``\textit{container layer}''. 

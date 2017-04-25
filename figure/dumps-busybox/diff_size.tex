@@ -1,0 +1,53 @@
+\begin{figure}[b]
+\begin{subfigure}[b]{0.23\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/dumps-busybox/busybox-d34455dump_iter_11.eps}
+    \caption{Memory Snapshot Size}
+    \label{fig:busydump}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.23\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/dumps-busybox/busybox-d34455-iter-11.eps}
+    \caption{Dirty Memory, original}
+    \label{fig:busydiff-ori}
+\end{subfigure}
+\begin{subfigure}[b]{0.23\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/dumps-busybox/busybox-d34455-iter-11-2.eps}
+    \caption{Dirty Memory, adjacent}
+    \label{fig:busydiff-adj}
+\end{subfigure}
+\begin{subfigure}[b]{0.23\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/dumps-busybox/busybox-d34455diffdiff_ori11.eps}
+    \caption{Dirty Difference, original}
+    \label{fig:busydiffdiff-adj}
+\end{subfigure}
+\begin{subfigure}[b]{0.23\textwidth}
+    % \centering
+    \includegraphics[width=\linewidth]
+    % {figure/test-tarssh.eps}
+    {figure/dumps-busybox/busybox-d34455diffdiff_adj11.eps}
+    \caption{Dirty Difference, adjacent}
+    \label{fig:busydiffdiff-ori}
+\end{subfigure}
+
+\caption{ Dirty Memory Size Analysis for Busybox. 
+Figure \ref{fig:busydump} shows checkpointed memory size for total 11 dumps.
+% Container is checkpointed and restored immediately in order to simulate the --leave-running options of checkpoint command.
+Figure \ref{fig:busydiff-ori} shows dirty memory size beween each of dump 1~10 and the original dump 0.
+Figure \ref{fig:busydiff-adj} shows dirty memory size between two adjacent dumps.
+Figure \label{fig:busydiffdiff-adj} shows the difference of dirty memories between three adjacent dumps.
+Figure \ref{fig:busydiffdiff-ori} shows the difference of dirty memories compared to the original dirty memory from dump 0 to dump 1. } 
+\label{fig:busydiff}
+\end{figure}
+

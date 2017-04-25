@@ -1,4 +1,18 @@
+
+% Edge computing platform provides low end-to-end latency by offloading mobile device's resource-intensive processing to the edge servers.
+% Edge server provides low end-to-end latency of resource-intensive application by providing offloading services for its nearby mobile clients.
+% Offloading mobile device's workloads to its nearby edge server provides high responsive user experiences for the client. 
+
+% Offloading service provided by edge servers should support the free mobility of the mobile clients. 
+Edge computing platform promises low end-to-end latency for its nearby mobile clients. 
+The free mobility of mobile client demand seamless migration of its offloading service's runtime states between its nearby edge servers.
+However, fast migration of offloading services across edge servers under WAN network environment is a challenging task. 
+This paper presents a new service handoff system, where offloading services will be seamlessly migrated to client's nearest edge servers while mobile clients is moving. Offloading services are running inside Docker containers. Service handoff is processed based on container's migration. Unlike common live migration's metrics, we aim to reduce the total duration of migration instead of the downtime. Unlike other container's migration methods, our system leverages the layered Docker storage system to reduce file system synchronization overhead without depending on the distributed file system. Evaluation shows our system could reduce the total duration of service handoff time by $56\%~ 80\%$ compared to the state-of-the-art service handoff system designed for edge computing platform.
+
 % This paper provides a sample of a \LaTeX\ document which conforms,
 % somewhat loosely, to the formatting guidelines for
-% ACM SIG Proceedings.\footnote{This is an abstract footnote}
-abstract
+% % ACM SIG Proceedings.\footnote{This is an abstract footnote}
+
+% Edge computing platform provides low end-to-end latency by offloading mobile device's resource-intensive processing to the edge servers.
+% Edge server provides low end-to-end latency of resource-intensive application by providing offloading services for its nearby mobile clients.
+% Offloading mobile device's workloads to its nearby edge server provides high responsive user experiences for the client. 

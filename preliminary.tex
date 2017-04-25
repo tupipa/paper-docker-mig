@@ -11,23 +11,34 @@ To the author's knowledge, we are the first to examine the inner details of Dock
 
 \subsection{Docker Container Live Migration in Practice }\label{migpractice}
 
-Although there is no official live migration tools for Docker containers yet, many enthusiastic developers have composed some customized tool for some versions of Docker platform, which shows great feasibility of Docker containers' live migration. For example, Ross Boucher's fork \cite{boucherPhaul} of P.haul
-% \cite{phaul}
-can be used for live migration of Docker containers for Docker 1.10-dev. However, after investigation, we found it doesn't leverage the layered images of Docker containers. It simply transfers all the file system of that container from source server to the target server, where the files are actually composed by all the image layers of that container. This made the tool not feasible and will crash the layered file system on the target Docker platform. Firstly, transferring all the image layers at once made the live migration process pretty slow for applications that has big file systems. 
-
-To verify our claim, we conducted experiments to live migrate containers through different network connections using this tool. We experiments on one simple container, busybox, and two applications for edge server offloading: OpenFace and ?.  Busybox is a stripped-down Unix tools in a single executable file. It has very tiny file system inside the container. OpenFace\cite{openface2016} is an application that will ship images from mobile device to the edge server, then execute the face recognition algorithm on server, and finally sending back a text string of the name of the person to the mobile device. The file system is huge for this container, which is approxmitely $2$ gigabytes.
-
-Table~\ref{table_samehost} shows the live migration could be done within 10 seconds for busybox and with 30 seconds for OpenFace. The two nodes are two virtual machines on the same physical host. The network bandwidth is high with just an RTT of 0.4 milliseconds, which allows to transfer 2.17 GB data within a short time.
-
-\input{figure/table-phaul.tex}
-
-However, when we live migrate containers between two physical host on the same LAN network, the performance is reduced dramatically. Table~\ref{table_wireless} shows that the migration of the busybox container will take 133.11 seconds with just 152 kilobytes of transferred size. And for the heavy offloading application of OpenFace, it cost about 3200 seconds with transferred sized of more than 2 Gigabytes. After investigation into its detailed steps of live migration, we found it didn't make use of the layered infrastructure. Instead of transfering only the thin container layer modified inside the container, it transfers the whole file system including all the stacked image layers of the container, which is definitely not a proper way to migrate Docker containers.  This behavior would cause severe problems from several aspects:
+Although there is no official live migration tool for Docker containers yet, many enthusiastic developers have composed some customized tools for certain versions of Docker platforms, which have demonstrated the feasibility of Docker containers' live migration. For example, project \cite{boucherPhaul} 
+can be used for live migration of Docker containers for Docker 1.10-dev. However, we found that this method simply transfers all the file system of that container from source server to the target server, where the files are actually composed by all the image layers of that container. 
+This behavior would cause severe problems from several aspects:
 % \begin{enumerate}[series = tobecont , itemjoin = \quad]
 \begin{enumerate}[series = tobecont]
     \item It will corrupt the layered file system inside the container after restored  on the target server. The tools just transfer the whole file system into one directory on the destination server and mount it as root directory for the container. After restored on the target host, the container no longer maintains its layered image stacks as on the source node. 
-    \item It dramatically reduces the efficiency of live migration. The transferring size of live migrating a container with its whole file system would just worse than a mature VM live migration. Because even live migration could avoid transferring the whole file system by sharing the base VM images as shown in \ref{motivation:vmhandoff}. 
+    \item It substantially reduces the efficiency of live migration. The transferring size of live migrating a container with its whole file system would just worse than a mature VM live migration. Because even live migration of VMs could avoid transferring the whole file system by sharing the base VM images as shown in
+    % \ref{motivation:vmhandoff}
+    \cite{ha2015vmhandoff}
+    . 
 \end{enumerate}
-Therefore, we need a new tool for live migrating the Docker containers that could leverage the layerred file systems and avoid the transmisssion of common image layer stack by just transferring the \textit{container layer}.
+
+To verify our claim, we have tested this tool with experiments to live migrate containers through different network connections. Our experiments use one simple container, Busybox, and an application, OpenFace, for edge server offloading.  Busybox is a stripped-down Unix tools in a single executable file, which results in a very tiny file system inside the container. OpenFace\cite{openface2016} is an application that dispatches images from mobile device to the edge server, then executes the face recognition algorithm on server, and finally sends back a text string of the name of the person to the mobile device. The container has a huge file system, which is approximate to $2$ gigabytes.
+
+Table~\ref{table_samehost} indicates the live migration could be done within 10 seconds for Busybox and with 30 seconds for OpenFace. The two nodes are two virtual machines on the same physical host. The network between two virtual hosts has a 1Gbps bandwidth with latency of 0.5 milliseconds which transfers 2.17 GB data within a short time.
+
+\input{figure/table-phaul.tex}
+Due to the dominance of wireless connection in edge computing network, we further test their containers live migrate  between two physical host on the same wireless LAN network with bandwidth of 15Mbps and latency of 4ms. Table~\ref{table_wireless} shows that the migration of the Busybox container takes 133.11 seconds with transferred size as small as 152 kilobytes. As for the migration of the OpenFace, it needs to transfer more than 2 Gigabytes data and  costs about 3200 seconds. 
+As we have stated, the sloppy live migration performance is mainly because this method is designed to transfer the whole file system including all the stacked image layers of the container. 
+
+% This behavior would cause severe problems from several aspects:
+% % \begin{enumerate}[series = tobecont , itemjoin = \quad]
+% \begin{enumerate}[series = tobecont]
+%     \item It will corrupt the layered file system inside the container after restored  on the target server. The tools just transfer the whole file system into one directory on the destination server and mount it as root directory for the container. After restored on the target host, the container no longer maintains its layered image stacks as on the source node. 
+%     \item It dramatically reduces the efficiency of live migration. The transferring size of live migrating a container with its whole file system would just worse than a mature VM live migration. Because even live migration could avoid transferring the whole file system by sharing the base VM images as shown in \ref{motivation:vmhandoff}. 
+% \end{enumerate}
+Therefore, we need a new tool to properly live migrate the Docker containers, avoiding the unnecessary transmission of common image layer stack.   
+This new tool should leverage the layered file systems to  transfer the \textit{container layer} only.
 
 % \subsection{Docker Layered Images }
 

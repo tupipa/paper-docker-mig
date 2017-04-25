@@ -1,15 +1,18 @@
 
 \input{figure/figure-before-after.tex}
 
-In this section, we introduce the design of our service hand-off framework based on live migration of Docker containers. We will first briefly introduce a simple usage scenario and give an overview of system architecture and the algorithm of service handoff. Then in section \ref{design:mapImage}, we will discuss our methodology of storage synchronization based on Docker image layers' sharing between two different Docker hosts. Finally, in section \ref{design:memDiff}, \ref{design:compression}, and \ref{design:pipe}, we will discuss more strategies to further improve the migration speed by memory difference transfer, file compression, pipelined and paralleled processing during the migration of Docker containers.
+In this section, we introduce the design of our service hand-off framework based on the live migration of Docker containers. We will first briefly introduce a simple usage scenario, give an overview of system architecture and the algorithm of service handoff. Then in section \ref{design:mapImage}, we will discuss our methodology of storage synchronization based on Docker image layers' sharing between two different Docker hosts. Finally, in section \ref{design:memDiff}, \ref{design:compression}, and \ref{design:pipe}, we will discuss more strategies to further accelerate the migration speed by memory difference transfer, file compression, pipelined and paralleled processing during the migration of Docker containers.
 
 \subsection{System Overview}
 
-Figure~\ref{fig:before-after} shows an example usage scenario of offloading service hand-off based on Docker container migration. 
-For example, the mobile client runs a real time face recognition application OpenFace\cite{openface2016} where it continuously sending the edge server images from the device's camera and the offloading containers processing the image via deep neural networks algorithm and send the name of the user back to the client as feedback.
+Figure~\ref{fig:before-after} shows an exemplar usage scenario of offloading service hand-off based on Docker container migration. 
+In this example (OpenFace\cite{openface2016}), the mobile client achieves real-time face recognition by offloading the workloads to an edge server. 
+The mobile client continuously reads images from camera to sends them to the edge server. 
+The edge server runs the face recognition application in a container, processing the image via deep neural networks algorithm and sends the recognition result  back to the client. 
 
 Before migration, mobile client offloads its computations to its nearest edge server \textbf{A}, where all the computations are processed inside a Docker container. 
-When the mobile client moves far away from server \textbf{A} and reaches the service area of edge server \textbf{B}, it's offloading computation will be migrated from server \textbf{A} to server \textbf{B}. This is done via migration of its offloading Docker containers, where all the runtime memory states as well as its storage data are synchronized to the target server \textbf{B}.
+In this paper, we simply call the container which computes the offloading workloads on the server side, the \textit{offloading container}.
+When the mobile client moves beyond the reach of server \textbf{A} and reaches the service area of edge server \textbf{B}, its offloading computation shall be migrated from server \textbf{A} to server \textbf{B}. This is done via migration of its offloading container, where all the runtime memory states as well as its storage data should be synchronized to the target server \textbf{B}.
 
 \input{figure/figure-migration-stages.tex}
 
@@ -18,17 +21,12 @@ Figure~\ref{fig:migstages} shows the design details of architecture as well as t
 
 \begin{enumerate}[label=\textbf{S\arabic*}]
 
-\item 
-% \label{prepare} 
-\label{prepare} 
-\textbf{
-% Pre-download Application Image.
-Synchronize Base Image Layers
-} Upon the container starts and offers offloading service to the client, we also dynamically predict the possible target edge servers that are near to the client. Then we request those target servers to synchronize the base image layers for that container. 
+\item \label{prepare} \textbf{% Pre-download Application Image.
+Synchronize Base Image Layers} Upon the container starts and offers offloading service to the client, we also dynamically predict the possible target edge servers that are near to the client. Then we request those target servers to start to synchronize the base image layers for that container. 
 
-\item \label{predump} \textbf{Pre-dump Container.} Before we received the migration request, we will try to dump a snapshot of the container's runtime memory and send to the possible target edge servers we found in stage \ref{prepare}. The container is still running during this stage. 
+\item \label{predump} \textbf{Pre-dump Container.} Before we received the migration request, we will try to dump a snapshot of the container's runtime memory and send to the possible target edge servers in previous stage \ref{prepare}. The container is still running during this stage. %TODO clearify the time of this event.
 
-\item \label{request}\textbf{Migration Request Received on Source Server}. Once the migration request is initiated, the request will be sent to the source server, and we regard as the start point of the service handoff.
+\item \label{request}\textbf{Migration Request Received on Source Server}. Once the migration request is initiated, the request will be sent to the source server, which we regard as the start point of the service handoff.
 % \item \label{prepare} \textbf{Remapping Layer Cache IDs.} Upon receiving the hand-off request to a certain target server, prepare for file system synchronization by remapping the image layers' local identifications on the target server.
 
 % \item \label{firstsync} Upon receiving migration request, compress the thin container layer and send to target.
@@ -38,7 +36,7 @@ From this point the container will stop running on the source server and waiting
 
 \item \label{fs-sync} \textbf{Contaienr Layer Synchronization} After checkpointed the container, the file system will not be changed. In this step, we will send the container layer's contents to the target server. At the same time, all the checkpointed runtime states and configuration files, such as \textit{state.json, config.v2.json, etc.} are also transferred to the target server. 
 
-\item \label{daemon-Reload} \textbf{Docker Daemon Reload} After we send all the runtime state and configuration files to the target node, Docker daemon on the target node still cannot recognize the container immediately.  This is because those runtime state and configuration files are created by another Docker daemon on source node, the daemon on target node doesn't have those configurations loaded into its runtime database. So we need to reload the Docker daemon in order to reload those runtime state and configuration files it just received from the source node.
+\item \label{daemon-Reload} \textbf{Docker Daemon Reload} After we send all the runtime states and configuration files to the target node, Docker daemon on the target node still cannot recognize the container immediately.  This is because those runtime states and configuration files are created by another Docker daemon on source node, the daemon on target node doesn't have those configurations loaded into its runtime database. So we need to reload the Docker daemon in order to reload those runtime state and configuration files it just received from the source node.
 
 \item \label{img-sync} \textbf{Get, Send, and Apply Memory Difference.} After we get checkpointed images from the final dump of the container, we then compare this final dump memory to the pre-dumped memory in stage \ref{predump}. We then could get the memory difference and send only these difference to the target server. 
 % \item \label{finalsync} Synchronize the file system for the last time, updating only the changed files of the container layer before last synchronization in \ref{firstsync}.
@@ -56,27 +54,27 @@ From this point the container will stop running on the source server and waiting
 
 \subsection{Strategy to Synchronize Storage Layers} \label{design:mapImage}
 
-As we introduced above, Docker's storage driver supports layered images where each layer represents file system differences. A running container's layered storage is composed by one writable container layer and several read only base image layers. 
+As we have introduced, Docker's storage driver supports layered images where each layer represents the summary of file system differences. A running container's layered storage is composed by one writable container layer and several read only base image layers. 
 
-The thin writable container layer stores all the files created or modified by the new created container from the base image. As long as the container is running, this layer is subject to change. So we postpone the synchronization of container layer after the container is stopped.
+The thin writable container layer stores all the files created or modified by the newly created container from the base image. As long as the container is running, this layer is subject to change. So we postpone the synchronization of container layer until the container is stopped.
 
-All the base image layers are read only inside container. They will not be changed during the whole life cycle of the container. So we could synchronize those layers as early as possible.
+All the base image layers are read only inside containers. They will not be changed during the whole life cycle of the containers. So we synchronize those layers as early as possible.
 
-There are two kinds of base image layers. Firstly, in most cases, the base image layers for the container are downloaded by `docker pull` command from the centralized Registry like Docker Hub. All those images can be shared by downloading from the same Registry. Secondly, the container itself can also create its own image layers by saving its current container layer as one read only image layer. 
+There are two kinds of base image layers. First, in most cases, the base image layers for the container are downloaded by `docker pull` command from the centralized image Registry like Docker Hub. All those images can be shared by downloading from the same Registry. Second, the container itself can also create its own image layers by saving its current container layer as one read only image layer. 
 
-For these two kinds of base images, we use different strategies to synchronize. Generally, we will download the common image layers between two Docker hosts from the centralized image Registry and transfer only the different image layers between two Docker hosts.
+For these two kinds of base images, we employ different synchronization strategies. More specifically, we will download the common image layers between two Docker hosts from the centralized image Registry and transfer only the different image layers between two Docker hosts.
 
-By downloading the common image layer from the Registry, we could reduce the traffic between two edge servers. Furthermore, the download could start as soon as the container is created on the source server, and thus the download time could be masked ahead of migration starts.
+By downloading the common image layer from the Registry, we reduce the traffic between two edge servers. Furthermore, given that the download could start as soon as the container is created on the source server, the download time could be considered ahead of migration starts and therefore amortized .
 
-Finally, for the base image layers create by the container, we transfer each image layer upon the image layer is created, no matter whether the migration has started or not. 
+Finally, for the base image layers create locally by the container, we transfer each of such image layer upon the image layer is created, no matter whether the migration has started or not. 
 
 \subsection{Layer ID Remapping} \label{idremapping}
 
-As discussed in section \ref{intro:idMatching} and \ref{intro:aufs:layerIDMapping}. The downloaded images from the common Registry have different cache IDs exposed to each Docker host. In order to share these common images across different Docker host, we need to match these  image layers by its original IDs instead of the cache IDs.
+As discussed in section \ref{intro:idMatching} and \ref{intro:aufs:layerIDMapping}. The downloaded images from the common Registry have different cache IDs exposed to each Docker host. In order to share these common images across different Docker host, we need to match these image layers by its original IDs instead of the cache IDs.
 
-In order to do this, we first remapping the cached IDs to its original IDs and compare the original IDs on two Different Docker hosts. If the two image layers on two host share the same original ID, we could determine they are exactly the same image layer. 
+In order to do this, we first remap the cached IDs to its original IDs and compare the original IDs on two different Docker hosts. If the two image layers on two host share the same original ID, we could infer that they are exactly the same image layers. 
 
-Then, for the matched original layer IDs on both of the Docker hosts, we will to remap the original IDs to its local cache IDs on the target host. Now that we get the new cache IDs on the target Docker host. Then we replace the old cache IDs on the source host with the new cache IDs on the target Docker host.  
+Then, for the matched original layer IDs on both Docker hosts, we will remap the original IDs to its local cache IDs on the target host. Now that we get the new cache IDs on the target Docker host. Then we replace the old cache IDs on the source host with the new cache IDs on the target Docker host.  
 
 By doing so, the image layer stack list for the migrated container will be reset with the new cache IDs that is addressable for the Docker host on the target server. So that when we restore the container in the future, its file system will be mounted correctly from the shared image layers on the target server.
 
@@ -95,24 +93,21 @@ By doing so, the image layer stack list for the migrated container will be reset
 
 In order to reduce the total memory image size during hand-off, we checkpoint the container and dump a snapshot of the container's memory in stage \ref{predump}. This could happen as soon as the container is created, or more enlightened, we could dump the memory when the most frequently used binary programs in the application are loaded into the memory. This snapshot of memory will be served as the base memory image for the live migration that happens next.
 
-After the base memory image is dumped, it is transferred immediately to the server. We assume the transfer will be finished before the hand-off starts. It's reasonable since we can send the base memory image as early as seconds after the container starts. 
-Also, the application's Docker images on the near edge servers are also started to download after the container starts and before the hand-off starts, we could process those two steps in parallel to reduce the total time cost. This is further discussed in section \ref{design:pipe}. Therefore, upon the hand-off starts, we can have the base memory image of the container already on the target server. 
+After the base memory image is dumped, it is transferred immediately to the server. We assume that the transfer will be finished before the hand-off starts, which is reasonable since we can send the base memory image as soon as the container starts. 
+% Also, the application's Docker images on the near edge servers are also started to download after the container starts and before the hand-off starts, 
+Besides, after the container starts and before the hand-off starts, the download of application's Docker images are also started on the near edge servers. 
+Hence, we process those two steps in parallel to reduce the total time span. This is further discussed in section \ref{design:pipe}. Thus, upon the hand-off starts, we have the base memory image of the container already on the target server. 
 
-Then after the client being served at the source node and starts to move into another edge server's service area, a migration request will be sent to the source node. 
-% As for who send the migration request, it's out of the scope of this paper.
-
-Once the migration request is received, we will  checkpoint and stop the container. After get the checkpointed memory, we do a diff operation on it from the base memory image we dumped in stage \ref{predump}. 
-Then we only need to transfer the difference of the dump memory to the target node. 
-
-\input{figure/dumps/diff_size.tex}
+Once the migration request is received, we will checkpoint and stop the container. After get the checkpointed memory, we do a diff operation on it from the base memory image we dumped in stage \ref{predump}. 
+In this way, we only need to transfer the difference of the dump memory to the target node. 
 
 \subsection{Data Transfer}\label{design:compression}
 
 % During migration, the files need to be transferred includes both text files as well as binary files. 
-During the live migration of a container, we mainly have 4 kinds of data need to transfer:
-the layer stacks information, the file system of thin writable \textit{container layer}, the meta data files of the container, and snapshot of the container's memory and image difference. Some of the data is in the form of messages, such as layer stacks information. Some of them are plain text files, such as most contents. And the memory snapshots and image differences are all binary image files. According to the feature of the files, we use different strategies to transfer the data.
+During the live migration of a container, we mainly have 4 types of data need to be transferred:
+the layer stacks information, the file system of thin writable \textit{container layer}, the meta data files of the container, and snapshot of the container's memory and image difference. Some of the data is in the form of messages, such as layer stacks information. Some of them are plain text files, such as most contents. And the memory snapshots and image differences are all binary image files. According to the feature of the files, we design different strategies to transfer the data.
 
-The layer stacks information is send via UNIX RPC API implementation in \cite{phaul}, which is based on a socket connection created by python scripts. Those information is only a list of SHA256 ID strings, so it's quite efficient to be sent as a socket message. There is no need to compress it since the overhead of compression would mask its benefits.
+The layer stacks information is send via UNIX RPC API implementation in \cite{phaul}, which is based on a socket connection created by python scripts. Those information is only a list of SHA256 ID strings, so it's quite efficient to be sent as a socket message. It is unworthy of applying compression due to the overhead outweighs the benefit.
 
 As for other data, including the container writable layer, meta data files, the dump memory images, and image differences, we use bzip2 to compress and send via authorized ssh connection.
 
@@ -137,9 +132,10 @@ With the help of parallel and pipelined processing,  we could improve the effici
 
 % From stage \ref{prepare} to stage \ref{restore}, there are lots of tasks that could be run in parallel between the source and target servers.
 
-Firstly, as we mentioned above in \ref{design:memDiff}, starting a container will trigger two events to happen in parallel: downloading/synchroizing images from Registry in cloud, and pre-dumping/sending base memory images to the possible edge servers near the source node. Those two process could be run at the same time in order to reduce the total time of stage \ref{prepare} and \ref{predump}. When the possible target servers are downloading images from Registry, the source server will checkpointing and sending the running container's base memory images to the possible target server.
+Firstly, as we mentioned above in \ref{design:memDiff}, starting a container will trigger two events to happen in parallel: downloading/synchronizing images from Registry in the cloud, and pre-dumping/sending base memory images to the possible edge servers near the source node. Those two process could be run at the same time in order to reduce the total time of stage \ref{prepare} and \ref{predump}. 
+%When the target servers are downloading images from Registry,  source server will checkpoint  and send the running container's base memory images to the possible target server.
 
-Secondly, daemon reload in stage \ref{daemon-Reload} is happend on target host, it could be processed while the source host is sending the memory difference to the target host in stage \ref{img-sync}. Stage \ref{fs-sync} cannot be paralleled with \ref{daemon-Reload}, because daemon reload on the target host requires the configuration data files sent in stage \ref{fs-sync}.
+Secondly, daemon reload in stage \ref{daemon-Reload} is required on target host, it could be processed while the source host is sending the memory difference to the target host in stage \ref{img-sync}. Stage \ref{fs-sync} cannot be paralleled with \ref{daemon-Reload}, because daemon reload on the target host requires the configuration data files sent in stage \ref{fs-sync}.
 
 Thirdly,
 in stage \ref{fs-sync}, we use compression to send all files in the \textit{container layer} over an authorized ssh connection between the source and target host. The compression and transfer of the \textit{container layer} can be pipelined using Linux pipes.
