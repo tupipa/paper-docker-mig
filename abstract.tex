@@ -1,14 +1,39 @@
 
+Supporting free mobility of mobile clients is vital important for offloading service on edge computing platform. The free mobility demands seamless migration of the offloading service among its nearby edge servers.
+% in order to keep such promise
+% .
+% 
+However, fast migration of offloading services across edge servers under WAN network environment poses significant challenges to the design of service handoff. 
+%
+%
+%
+In this paper, we present a novel service handoff system, which seamlessly migrates offloading service to the client's nearest edge server while the mobile client is moving. Offloading services are running inside Docker containers. Service handoff is achieved via container's migration. 
+% 
+We identify the performance problem of the state-of-the-art work for Docker container's migration. 
+We analyze storage management of Docker containers based with AUFS storage driver .
+%
+Base on our systematically study of the container layer management and images stacking,
+we propose a migration method which leverages the layered storage system to reduce file system synchronization overhead without depending on the distributed file system. 
+We implement a prototype system and conduct experiments using real world product applications.
+Evaluation results reveal that, compared to the state-of-the-art service handoff system designed for edge computing platform, our system reduces the total duration of service handoff time by 
+$80\%$($56\%$) with network bandwidth as 5Mbps(20Mbps).
+
+
+
 % Edge computing platform provides low end-to-end latency by offloading mobile device's resource-intensive processing to the edge servers.
 % Edge server provides low end-to-end latency of resource-intensive application by providing offloading services for its nearby mobile clients.
 % Offloading mobile device's workloads to its nearby edge server provides high responsive user experiences for the client. 
 
 % Offloading service provided by edge servers should support the free mobility of the mobile clients. 
-Edge computing platform promises low end-to-end latency for its nearby mobile clients. 
-The free mobility of mobile client demand seamless migration of its offloading service's runtime states between its nearby edge servers.
-However, fast migration of offloading services across edge servers under WAN network environment is a challenging task. 
-This paper presents a new service handoff system, where offloading services will be seamlessly migrated to client's nearest edge servers while mobile clients is moving. Offloading services are running inside Docker containers. Service handoff is processed based on container's migration. Unlike common live migration's metrics, we aim to reduce the total duration of migration instead of the downtime. Unlike other container's migration methods, our system leverages the layered Docker storage system to reduce file system synchronization overhead without depending on the distributed file system. Evaluation shows our system could reduce the total duration of service handoff time by $56\%~ 80\%$ compared to the state-of-the-art service handoff system designed for edge computing platform.
+% While edge computing platform promises to provide low end-to-end latency services to its nearby mobile clients, 
+% the support of client mobility has great impacts on the service performance. 
 
+
+
+% Specifically, we aim to reduce the total duration of migration instead of the downtime.
+%
+%
+%
 % This paper provides a sample of a \LaTeX\ document which conforms,
 % somewhat loosely, to the formatting guidelines for
 % % ACM SIG Proceedings.\footnote{This is an abstract footnote}

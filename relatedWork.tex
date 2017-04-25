@@ -1,20 +1,22 @@
-In this section, we discuss relate work in the areas of dynamic VM synthesis, VM hand-off, and container live migration.
+In this section, we discuss relate work in the areas of dynamic VM synthesis, VM handoff, and container migration.
 
 \subsection{Dynamic VM Synthesis and VM Hand-off} \label{motivation:vmhandoff}
 
 % Many researches have been done in order to accelerate the service handoff across edge servers.
-Techniques based on virtual machine migration have been proposed in  \cite{ha2015vmhandoff} \cite{satya2009case} to accelerate the service handoff across edge servers. Virtual Machine live migration in data centers could not be used for service handoff, which was well discussed in \cite{ha2015vmhandoff}. Firstly, Live migration of VM requires high bandwidth of connection and transfers Gigabytes of data in each migration, where service handoff for offloading happens on low bandwidth WANs. Secondly, live migration in data centers aims at short duration of the VM down time. However, service handoff across edge servers requires to optimize the time of total operations from the beginning of handoff request. 
+Techniques based on virtual machine migration have been proposed in  \cite{ha2015vmhandoff} \cite{satya2009case} to accelerate the service handoff across edge servers. 
+% As discussed in irtual Machine live migration in data centers could not be used for service handoff.
+% which was well discussed in \cite{ha2015vmhandoff}. Firstly, Live migration of VM requires high bandwidth of connection and transfers Gigabytes of data in each migration, where service handoff for offloading happens on low bandwidth WANs. Secondly, live migration in data centers aims at short duration of the VM down time. However, service handoff across edge servers requires to optimize the time of total operations from the beginning of handoff request. 
 
-In order to enable high speed service hand-off based on virtual machine migration techniques, Satyanarayanan \textit{et al.} in \cite{satya2009case} proposed VM synthesis to divide a huge VM imges into a base VM image and a relatively small overlay image for one specific application. Before migration starts, the server is assumed to have a base image, so that the transition of this base image is avoided. During migration, only the application's overlay image is transferred from the source to the target server.
+In order to enable high speed service handoff based on virtual machine migration techniques, Satyanarayanan \textit{et al.} in \cite{satya2009case} proposed VM synthesis to divide a huge VM imges into a base VM image and a relatively small overlay image for one specific application. Before migration starts, the server is assumed to have a base image, so that the transition of this base image is avoided. During migration, only the application's overlay image is transferred from the source to the target server.
 
 Based on the work of VM synthesis, VM handoff across Cloudlet servers (alias of edge servers) was proposed in \cite{ha2015vmhandoff}. VM handoff allows the mobile client to seamlessly transfer the runtime status of its VM from one edge sever to a nearer edge server. Besides VM synthesis, it uses dirty tracking for both file system and main memory  to reduce the transferred size during handoff.
 Additionally, it also uses compression, pipelined processing to reduce transfer time and algorithms to adapt to different network conditions.
 Finally, it highly reduced the transferred size and migration time under WAN network environments.
 
-While significant efforts have been invested in to VM synthesis and hand-off, the performance cannot meet the requirements of offloading services in edge computing environments, given the mobility of clients, dominance of wireless access, geographical distribution of edge nodes, and real-time interaction requirement. Instead,  our work is along the line of container, a lightweight OS-level virtualization technique, and focus on the live migration of container. 
+While significant efforts have been invested into VM synthesis and handoff, the performance cannot meet the requirements of offloading services in edge computing environments, given the mobility of clients, dominance of wireless access, geographical distribution of edge nodes, and real-time interaction requirement. Instead,  our work is along the line of container, a lightweight OS-level virtualization technique, and focus on the migration of container to reduce the total handoff time. 
 % However,
 % % the transfer size of the application still had tens or hundreds of megabytes on average. 
-% the total hand-off time was still several minutes on a WAN network. For example, it will requires $245.5$ seconds to migrate a running OpenFace instance under 5Mbps bandwidth (50ms latency) network in \cite{ha2015vmhandoff}. 
+% the total handoff time was still several minutes on a WAN network. For example, it will requires $245.5$ seconds to migrate a running OpenFace instance under 5Mbps bandwidth (50ms latency) network in \cite{ha2015vmhandoff}. 
 
 % One of the reasons for the long latency of handoff the large image size we need to transfer. Although the VM synthesis could reduce the image size by splitting images into multiply layers and only transfer the application-specific layer, the total transferred size is still in the magnitude of tens of megabytes and even hundreds of megabytes. 
 % The application layer was encapsulated with the whole application, both its static binary programs and its runtime memory data, which we think is an unnecessary cost. 
@@ -26,7 +28,7 @@ While significant efforts have been invested in to VM synthesis and hand-off, th
 % \subsubsection{Enlightened VM Post-Copy} In order to improve the 
 % \subsection{Linux Containers}
 
-\subsection{Containers and Live Migration}
+\subsection{Containers Migration}
 % Useful link: https://coreos.com/rkt/docs/latest/rkt-vs-other-projects.html#rkt-vs-runc
 
 % Containers provide operating system level virtualization by running processes in isolated environments, 
@@ -41,22 +43,20 @@ Although creating a container by crafting cgroup and namepaces step by step is p
 runC\cite{runc},
 rkt\cite{rkt}, 
 OpenVZ\cite{openvz}, 
-Docker\cite{docker}, etc. Different container runtime has different scenerios of usage. For example, LXC/LXD only cares about full system containers and doesn’t care about what kind of application runs inside the container, while Docker aims to encapsulate a specific application in the container.  
+Docker\cite{docker}, etc. Different container runtime has different scenerios of usage. For example, LXC/LXD only cares about full system containers and doesn't care about what kind of application runs inside the container, while Docker aims to encapsulate a specific application in the container.  
 
-Live migration of containers become possible when CRIU (Checkpoint/Restore In Userspace)\cite{criu} supports the checkpoint/restore functionality for Linux. 
+Migration of containers become possible when CRIU (Checkpoint/Restore In Userspace)\cite{criu} supports the checkpoint/restore functionality for Linux. 
 Now CRIU supports the checkpoint and restore of containers for OpenVZ, LXC, and Docker. 
 
 
-Based on CRIU, OpenVZ now supports live migration of containers. The implementation can be found from the CRIU community's open source project, P.Haul(process Hauler)\cite{phaul}.  It's claimed that the migration could be done within 5 seconds\cite{livmigcon}.
+Based on CRIU, OpenVZ now supports migration of containers. The implementation can be found from the CRIU community's open source project, P.Haul(process Hauler)\cite{phaul}.  It's claimed that the migration could be done within 5 seconds\cite{livmigcon}.
 However, OpenVZ uses distributed storage system\cite{openvzfs}, where all files are shared across high bandwidth network. 
-This means when it live migrates the containers, it only needs to migrate the checkpointed memory images and no file transfer need to be done. 
-However, due to the limited WAN bandwidth for edge servers, it's not possible to deploy distributed storage. Therefore, live migration of OpenVZ containers is not suitable for service handoff on edge computing platforms.
+This means when it migrates the containers, it only needs to migrate the checkpointed memory images and no file transfer need to be done. 
+However, due to the limited WAN bandwidth for edge servers, it's not possible to deploy distributed storage. Therefore, migration of OpenVZ containers is not suitable for service handoff on edge computing platforms.
 
-For LXC containers, the live migration is implemented in Qiu's thesis work \cite{qiu2016evaluating}, which is also based on the CRIU project. However, LXC regards container as a whole system container, and they don't have layered storage for containers. Therefore, when containers are migrated, all the file system for that container must be migrated together will all its memory status. The total transfer size will be comparable with migrating a whole virtual machine(VM). So, it's still not feasible for edge computing environment. 
+For LXC containers, the migration is implemented in Qiu's thesis work \cite{qiu2016evaluating}, which is also based on the CRIU project. However, LXC regards container as a whole system container, and they don't have layered storage for containers. Therefore, when containers are migrated, all the file system for that container must be migrated together will all its memory status. The total transfer size will be comparable with migrating a whole virtual machine(VM). So, it's still not feasible for edge computing environment. 
 
-For Docker containers, there is a sample migration support in P.Haul's source code, which supports only an older version of docker-1.9.0-dev. And it's also extended by Ross Boucher to support docker-1.10-dev. However, as we will discussed in section \ref{migpractice}, we find this implementation will also transmit the entire file system for that container, regardless of the layered storage of Docker platform, which will make the migration vital slow in the edge of WAN network. 
-
-Therefore, in this paper, we dive into the inner details of Docker storage in order to find out how to leverage the layered storage of Docker platform during the migration and avoid the transfer of unnecessary docker images. 
+For Docker containers, there is a sample migration helper in P.Haul's source code, which supports only an older version of docker-1.9.0-dev. And it's also extended by Ross Boucher to support docker-1.10-dev. However, as we have discussed in section \ref{migpractice}, we find this implementation transmits the entire file system of that container, regardless of the layered storage of Docker platform, which makes the migration unsatisfactorily slow across the edges of WAN network. Therefore, in this paper, we dive into the inner details of Docker storage and find out how to leverage the layered storage of Docker platform during the migration and finally avoid the transfer of unnecessary file system by sharing Docker images between different Docker host. 
 
 %  a lightweight universal runtime container. runC is a low-level container runtime and an implementation of the Open Container Initiative specification. runC exposes and expects a user to understand low-level details of the host operating system and configuration.
 

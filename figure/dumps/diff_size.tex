@@ -1,5 +1,5 @@
 \begin{figure}[b]
-\begin{subfigure}[b]{0.23\textwidth}
+\begin{subfigure}[b]{0.3\textwidth}
     % \centering
     \includegraphics[width=\linewidth]
     % {figure/test-tarssh.eps}
@@ -23,22 +23,21 @@
     \caption{Dirty Memory, adjacent}
     \label{fig:facediff-adj}
 \end{subfigure}
-
-\begin{subfigure}[b]{0.23\textwidth}
-    % \centering
-    \includegraphics[width=\linewidth]
-    {figure/dumps/face-518744diffdiff_ori11.eps}
-    \caption{Dirty Difference, original}
-    \label{fig:facediffdiff-adj}
-\end{subfigure}
-\begin{subfigure}[b]{0.23\textwidth}
-    % \centering
-    \includegraphics[width=\linewidth]
-    % {figure/test-tarssh.eps}
-    {figure/dumps/face-518744diffdiff_adj11.eps}
-    \caption{Dirty Difference, adjacent}
-    \label{fig:facediffdiff-ori}
-\end{subfigure}
+% \begin{subfigure}[b]{0.23\textwidth}
+%     % \centering
+%     \includegraphics[width=\linewidth]
+%     {figure/dumps/face-518744diffdiff_ori11.eps}
+%     \caption{Dirty Difference, original}
+%     \label{fig:facediffdiff-adj}
+% \end{subfigure}
+% \begin{subfigure}[b]{0.23\textwidth}
+%     % \centering
+%     \includegraphics[width=\linewidth]
+%     % {figure/test-tarssh.eps}
+%     {figure/dumps/face-518744diffdiff_adj11.eps}
+%     \caption{Dirty Difference, adjacent}
+%     \label{fig:facediffdiff-ori}
+% \end{subfigure}
 
 \caption{ Dirty Memory Size Analysis for OpenFace. 
 % The data is collected from 11 dumps of the running container of OpenFace, labeled from dump 0 to 10. Memory is dumped every 10 seconds. Container continues to run during the first 10 dumps, and stops after 11th dump.
@@ -46,8 +45,9 @@ Figure \ref{fig:facedump} shows checkpointed memory size for total 11 dumps.
 % Container is checkpointed and restored immediately in order to simulate the --leave-running options of checkpoint command.
 Figure \ref{fig:facediff-ori} shows dirty memory size beween each of dump 1~10 and the original dump 0.
 Figure \ref{fig:facediff-adj} shows dirty memory size between two adjacent dumps.
-Figure \label{fig:facediffdiff-adj} shows the difference of dirty memories between three adjacent dumps.
-Figure \ref{fig:facediffdiff-ori} shows the difference of dirty memories compared to the original dirty memory from dump 0 to dump 1. } 
+% Figure \label{fig:facediffdiff-adj} shows the difference of dirty memories between three adjacent dumps.
+% Figure \ref{fig:facediffdiff-ori} shows the difference of dirty memories compared to the original dirty memory from dump 0 to dump 1.
+} 
 \label{fig:facediff}
 \end{figure}
 

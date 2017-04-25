@@ -1,11 +1,8 @@
-We proposes a framework that enable service hand-off across edge offloading servers, which could ensure low end-to-end latency of resource-intensive cloud offloading while maintaining the high mobility of clients. The service hand-off time is reduced by deploying docker containers to the Edge servers that are close to users. With the high speed live migration of containers and high availability of Docker images from the remote cloud, the hand-off time of services across different edge servers is reduced significantly.
+We proposes a framework that enables service handoff across edge offloading servers, which leverages the layered storage system of Docker container platform to improve the migration performance.
+Our system helps the edge computing platform to continuously provide offloading services with low end-to-end latency while maintaining the high mobility of clients. 
+By leveraging the layered file system of Docker container, we eliminate unnecessary  transfer of a significant portion of the file system for the application. 
+By transferring the base memory image ahead of the handoff and transferring only the incremental memory difference when migration starts, the total transfer size is further reduced. Finally, our system shows that the hand-off time is reduced by $56\%\sim 80\%$ compared to the state-of-the-art VM handoff for the edge computing platform.
 
-Docker is still in active development and a more reliable tool for live migration is under developing by CRIU's community.
-
-from VM handoff: reduce data size: delta-encode, dedumplicate,
-
-% Communication Methods: rpc+tar+thread, or tar+ssh
-
-latest version of docker:
+% But currently, our system only supports an older version of Docker. In the future, we need to adapt the system to the newest Docker platform. 
 
 % cite http://blog.thoward37.me/articles/where-are-docker-images-stored/ docker-0.6.7

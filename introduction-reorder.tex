@@ -1,0 +1,72 @@
+
+% What is the problem?
+% Why is it interesting and important?
+Edge computing has attracted lots of attention both from the industry and academia in recent years\cite{satya2009case,  MEC2014initiative, MEC2015-5G, yi2015fog,yi2015survey,shi2016edge,chiang2016fog,satya2017edge}.
+By placing the resource-rich nodes in close proximity to mobile devices or Internet of Things (IoT) devices, edge computing offers more responsive services with higher scalability and availability than the traditional cloud platform \cite{MEC2014initiative,satya2017edge}.
+To take advantages of the nearby resources, computation offloading technique have been playing an import role~\cite{cuervo2010maui,lane2016deepx,openface2016,liu2016paradrop}.
+%%% here we can cite more offloading papers from the committee.
+
+In edge computing environment, offloading the computation to the nearest edge server is the key point of cutting short network latency and improving user experiences. 
+However, when a mobile device moves away from its current offloading server, the network latency will increase, which will deteriorate the performance of offloading services significantly. Ideally, when the user moves, its offloading service running on the edge server should adapt to this change and move to the nearest edge server in order to maintain highly responsive service. 
+% However, we don't want to add any down time during this procedure.
+% --- lele: here commented out 'down time', in order to emphasis the metrics of 'total duration' of the migration in the following.
+Therefore, migrating the offloading service or application from one edge server to a nearer edge server is vital important to the edge computing infrastructure. 
+
+% Why is it hard? (E.g., why do naive approaches fail?)
+% Why hasn't it been solved before? (Or, what's wrong with previous proposed solutions? How does mine differ?)
+There are several approaches for migrating the offloading service or application. 
+VM Hand-off \cite{ha2015vmhandoff} has been proposed to accelerate the service hand-off across the offloading edge servers. It divided VM images into two stacked overlays based on Virtual Machine (VM) synthesis \cite{satya2009case} techniques. 
+So that the mobile device only needs to transfer the VM's top application overlay to the target server instead of the whole VM image volume. However, considering that the total transferred size is usually in the magnitude of tens of megabytes and even hundreds of megabytes, the total handoff time is still a relatively long time for latency sensitive mobile applications. For example, migrating the OpenFace \cite{openface2016}, a face recognition application for wearable devices, will cost up to $247$ seconds on a 5Mbps wide area network (WAN), which can barely meet the requirement of responsive user experience. 
+Furthermore, VM image overlays is hard to maintain and not widely available due to its limited support and deployment in the real world.
+
+In contrast, the wide deployment of Docker platform enlightens the possibility of high speed offloading service hand-off. As a container engine, Docker has gained increasingly popularity in industrial cloud platforms. It serves as an composing engine for Linux containers, where applications are running in isolated environments based on the OS-level virtualization technique.
+Docker's application runs in an isolated container with all its dependencies installed. Docker's storage driver uses layered images inside containers, which enables fast packaging and shipping of any application as a lightweight container. 
+Many container platforms including Docker have already supported or partially supported container migration, such as OpenVZ\cite{openvz}, LXC\cite{qiu2016evaluating}, and Docker \cite{phaul,boucherPhaul}, but none of them are suitable for the edge computing environment. The official released OpenVZ migration~\cite{phaul} eliminates the file system transfer using distributed storage. However, due to the geographically distributed nature of edge node, and heterogeneity of edge network devices, it is hard to realize distributed storage over WAN that can meet the latency requirement of edge applications. 
+LXC migration~\cite{qiu2016evaluating} and Docker migration~\cite{phaul, boucherPhaul} is based on CRIU\cite{criu} but sends the whole container's file system during the migration, which is not efficient and results in high network overhead in edge network over WAN.
+
+In exploring an efficient container migration that suits edge computing, we focus on reducing the file system transfer size, which is complementary to previous efforts.
+%
+Docker's layered storage supports copy-on-write (COW) where all the writable data of the application are encapsulated into one thin layer on top of its base image layers.
+Thus, we only need to transfer the thin writable layer on top of the container's layer stacks during migration. Besides, the Docker's infrastructure inherently uses the public cloud storage to distribute container images (like Docker Hub\cite{dockerhub}, and many other self-hosted images hubs), which can be considered widely available across the Internet. 
+Therefore, the application container's base image layers can be downloaded from those sources before the migration. We argue that the Docker container's layered storage has the potential to reduce the file system transfer size. But until the paper is written, we found no container migration tool that can efficiently utilize the layered file system. 
+
+
+
+
+% What are the key components of my approach and results? Also include any specific limitations.
+In this paper, we propose to build container hand-off system, which exploits opportunities in the Docker's layered file system, to support high speed offloading service in edge computing environment. 
+However, there are significant challenges to overcome:
+
+Firstly, we need to know the details of how Docker manages its image layers and how a container is created from layered images. There is few research work that investigates the images management inside Docker. In order to provide a systematic bird-view over Docker's storage management, we investigate and summarize the layered images based on AUFS storage driver in \ref{aufsIntroduction}.
+
+Secondly, we need to find out how can we make use of Docker's layered images to speed up the migration of containers. According what we found inside AUFS storage, Docker will create a new SHA256 number as local  identification for each image layer downloaded from the cloud. 
+This means that if two Docker host download the same image layer from the same repository, they will have different reference identification. This is originally a safety mechanism to avoid the image overlapping across Docker hosts\cite{dockerlayer}. 
+However, when we migrate one container from one Docker host to another Docker host, we must recognize those image layers that have different local identifications but actually have the same content with the same origin. So that those redundant image layers will not be transferred during the migration.
+
+Thirdly, the received migration data will include both the file system as well as the checkpointed binary memory images. Although the total size is reduced dramatically by leveraging Docker's layered storage, we still need to find a way to further reduce the transfer size in order to reduce the transfer time. 
+
+Last but not the least, we need to find a way to stringent the user-experienced latency during migrating a container across different edge servers. User-experienced latency could be shorter than the actual migration time by well designed strategies of migration process. Ideally, we should make it close to a seamless service hand-off where users cannot notice their offloading edge server has been changed.
+
+%
+To mitigate those challenges, we proposed a framework which enables high speed offloading service handoff based on Docker container migration. By only encapsulating and transferring the thin writable \textit{container layer} and its increamental runtime status, we reduce the total handoff time significantly.
+% The contributions of this paper are listed as below:
+% In summary, in this paper, we make the following contributions:
+We make the following contributions in this paper:
+\begin{itemize}
+    % \item It analyses the status of current techniques to migrate Docker containers. It evaluates the performance of some state-of-the-art works that could do Docker container migration and expose the problems in it.
+    
+    \item We have investigated the current status of techniques for Docker container's migration. 
+    During the investigation, we evaluate the performance of existing works and find no current work has leveraged the layered storage of Docker to improve the migration performance.
+     
+    %  \item It analyses the detailed storage management of Docker containers based on AUFS storage driver. It systematically introduces 
+    \item  We have analyzed the detailed storage management of Docker containers based on AUFS storage driver and systematically studied the layer management and images stacking methodology inside the Docker storage. Based on our analysis and studies, we have proposed a novel method which leverages those mechanisms to speed up the migration.
+    
+    % \item It proposes a framework that enable service hand-off across edge offloading servers with help of the high speed migration of containers leveraging the layered images of Docker platform. The framework ensures low end-to-end latency of resource-intensive cloud offloading while maintaining the high mobility of clients. 
+ 
+     \item We have designed and built a framework that enables service hand-off across edge offloading servers with the high speed migration of containers leveraging the layered images of Docker platform. The framework ensures low end-to-end latency of resource-intensive cloud offloading while maintaining the high mobility of clients. 
+     
+    % \item It implemented a prototype of the system and evaluate the hand-off performance of containers and response time of offloading applications, like OpenFace, etc. 
+    \item We have implemented a prototype of our system and conducted extensively evaluations. We have measured the container hand-off time and offloading response time of real world product applications.
+    
+\end{itemize}
+
