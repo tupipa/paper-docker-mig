@@ -76,12 +76,14 @@ All the cached ID of image layers is stored in the \textit{/image/aufs/layerdb/s
 
 \input{figure/aufs-tree-fd.tex}
 
-Figure~\ref{fig:aufs} shows the Docker storage structure based on AUFS driver. White box stands for a file and blue box stands for a directory. 
-
+Figure~\ref{fig:aufs} shows the Docker storage structure based on AUFS driver. White box stands for a file and blue box stands for a directory. Since all directories share the same parent dir \textit{/var/lib/docker/0.0}, we will use `.' to represent this common directory in the following sections. 
 
 \textbf{Container's Image Layer Stack List:} We know that each Docker image contains several image layers. Those image layers are addressed by their SHA256 content hash IDs. Each Docker image has a list that stores all these layer IDs in the order of how they stacked from top to bottom.
-The file \textit{./aufs/layers/<rootfs ID>-init}  in Figure \ref{fig:aufs} shows the path of this file inside the AUFS storage structure. This file stores a list of SHA256 IDs of all image layers that will be bind mounted together as the container's root file system. For example, for one container OpenFace with rootfs ID of \textit{
-febfb1642ebeb25857bf2a9c558bf695\footnote{SHA256 ID has 64 hexical bits, here we truncate it to 32 hexical bits in order to save space}
+The file \textit{./aufs/layers/<rootfs ID>-init}  in Figure \ref{fig:aufs} shows the path of this file inside the AUFS storage structure. This file stores a list of SHA256 IDs of all image layers that will be bind mounted together as the container's root file system. For example, for one container OpenFace with rootfs ID of 
+\textit{
+febfb1642ebeb25857bf2a9c558bf695
+\footnotetext{This is for Docker 1.10-dev, the latest Docker (version 17.04.0-ce, build 4845c56) has the runtime data directory changed to \textit{/var/run/docker/libcontainerd/containerd/}}
+\footnote{SHA256 ID has 64 hexadecimal characters, here we truncate it to 32 hexadecimal characters in order to save space}
 }, it's stack list file\textit{./aufs/ layers/ febfb1642ebeb25857bf2a9c558bf695}
 
 
@@ -94,10 +96,10 @@ Now we see this file behaves like an important handler for all the union file sy
 \textbf{Image Layer Content Directory:} Now we have the mount point, and a list of image layer IDs as the addresses for the storage layers. But before a container can start, the Docker daemon needs to know where to find the files inside each image layers. Here comes the directory of
  \textit{./aufs/diff/<layer ID>/}, which stores all the image layer contents from one specific layer identified by a local image \textit{<layer ID>}. If \textit{<layer ID>} is the same as \textit{<rootfs ID>} of one container, then this directory is where the content of container layer stores, i.e. the container's thin writable layer. 
 
-\textbf{Unified Mount Point:} The directory \textit{/var/lib/docker/0.0/ aufs/mnt/<rootfs ID>/ }  is the root file system mount point of the container. All the image layers are union mounted to this folder and provide a whole file system view for the container. For example, as shown in Figure \ref{fig:aufs}, when a container is created based on a Linux image, its mount point will contain the root directory contents like \textit{/usr/, /home/, /boot }, etc. All those directories are mounted from its underlying layered images. 
+\textbf{Unified Mount Point:} The directory \textit{./aufs/mnt/<rootfs ID>/ }  is the root file system mount point of the container. All the image layers are union mounted to this folder and provide a whole file system view for the container. For example, as shown in Figure \ref{fig:aufs}, when a container is created based on a Linux image, its mount point will contain the root directory contents like \textit{/usr/, /home/, /boot/, etc. }. All those directories are mounted from its underlying layered images. 
 Since this directory is a mount point for a running container's file system, it will be only available when the container is running. If the container stops running, all the image layers will be unmounted from this mount point. So it will become an empty directory.
 
-Here, the SHA256 ID <rootfs ID>  is also an identification image layer ID of the container's thin writable image layer. Since all directories share the same parent dir \textit{/var/lib/docker/0.0}, we will use `.' to represent this common directory in the following sections. 
+Here, the SHA256 ID <rootfs ID>  is also an identification image layer ID of the container's thin writable image layer. 
 
 \textbf{Layer ID Mapping:}  
 Until now, the layer IDs we have discussed above are just local SHA256 IDs, or the so called cache IDs, which are generated dynamically when each image layer is downloaded by `docker pull' command. As we discussed above, from then on, Docker daemon will address the image layer use the cache ID instead of its original layer ID.

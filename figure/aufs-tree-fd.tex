@@ -193,7 +193,7 @@ for tree={
     % myfolder,
 }
 % [, phantom, s sep = 1cm
-[/var/run/docker/execdriver/native/\footnote{This is for Docker 1.10-dev, the latest Docker (version 17.04.0-ce, build 4845c56) has this directory changed to \textit{/var/run/docker/libcontainerd/containerd}}
+[/var/run/docker/execdriver/native/
     [<conID1>
         [state.json, file]
     ]
@@ -204,6 +204,11 @@ for tree={
 % ]
 \end{forest}
 
-\caption{Runtime Data for Containers}
+\caption[Caption for LOF]{Runtime Data for Containers\protect\footnotemark 
+% -dev, the latest Docker (version 17.04.0-ce, build 4845c56) has this directory changed to \textit{/var/run/docker/libcontainerd/containerd}}
+% \footnote{This is for Docker 1.10\-dev, the latest Docker (version 17.04.0\-ce, build 4845c56) has this directory changed to \textit{/var/run/docker/libcontainerd/containerd}}
+}
 \label{fig:aufs-runtime}
 \end{figure}
+
+% \footnotetext{This is for Docker 1.10-dev, the latest Docker (version 17.04.0-ce, build 4845c56) has this directory changed to \textit{/var/run/docker/libcontainerd/containerd}}

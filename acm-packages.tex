@@ -14,7 +14,16 @@
 % \usepackage{subfigure}
 % \usepackage{subcaption}
 \usepackage{tikz}
-\usetikzlibrary{positioning, shapes, shapes.geometric, arrows, chains, calc,intersections}
+\usetikzlibrary{positioning, shapes, shapes.geometric, arrows, chains, calc,intersections, patterns}
+% https://tex.stackexchange.com/questions/50934/how-to-mark-a-node-in-a-graph-with-a-pattern
+% \pgfdeclarepatternformonly{soft horizontal lines}{\pgfpointorigin}{\pgfqpoint{100pt}{1pt}}{\pgfqpoint{100pt}{3pt}}%
+% {
+%   \pgfsetstrokeopacity{0.3}
+%   \pgfsetlinewidth{0.1pt}
+%   \pgfpathmoveto{\pgfqpoint{0pt}{0.5pt}}
+%   \pgfpathlineto{\pgfqpoint{100pt}{0.5pt}}
+%   \pgfusepath{stroke}
+% }
 
 % environ: scale tikzpicture to textwidth
 %   https://tex.stackexchange.com/questions/6388/how-to-scale-a-tikzpicture-to-textwidth

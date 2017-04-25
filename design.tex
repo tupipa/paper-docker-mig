@@ -30,14 +30,14 @@ our architecture supports high speed offloading service hand-off through the fol
 \item \label{checkpoint} \textbf{Checkpoint and Stop Container.} After we remapped the layer IDs according the shared original layer IDs between source and target edge servers, we then could checkpoint and stop the container in order to send all the latest run-time states to the target edge server.
 From this point the container will stop running on the source server and waiting to be restored on the target server.
 
-\item \label{fs-sync} \textbf{Final FS Synchronization} After checkpointed the container, the file system will not be changed. In this step, we will send the container layer's contents to the target server. At the same time, all the checkpointed runtime states and configuration files, such as \textit{state.json, config.v2.json, etc.} are also transferred to the target server. 
+\item \label{fs-sync} \textbf{Contaienr Layer Synchronization} After checkpointed the container, the file system will not be changed. In this step, we will send the container layer's contents to the target server. At the same time, all the checkpointed runtime states and configuration files, such as \textit{state.json, config.v2.json, etc.} are also transferred to the target server. 
 
 \item \label{daemon-Reload} \textbf{Docker Daemon Reload} After we send all the runtime state and configuration files to the target node, Docker daemon on the target node still cannot recognize the container immediately.  This is because those runtime state and configuration files are created by another Docker daemon on source node, the daemon on target node doesn't have those configurations loaded into its runtime database. So we need to reload the Docker daemon in order to reload those runtime state and configuration files it just received from the source node.
 
 \item \label{img-sync} \textbf{Get Memory Difference.} After we get checkpointed images from the final dump of the container, we then compare this final dump memory to the pre-dumped memory in stage \ref{predump}. We then could get the memory difference and send only these difference to the target server. 
 % \item \label{finalsync} Synchronize the file system for the last time, updating only the changed files of the container layer before last synchronization in \ref{firstsync}.
 
-\item \label{restore} Restore container on the target host.
+\item \label{restore} \textbf{Restore Container.} Restore container on the target host.
 
 \end{enumerate}
 

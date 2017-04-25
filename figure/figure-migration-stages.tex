@@ -1,55 +1,276 @@
 
 % https://tex.stackexchange.com/questions/350729/software-architecture-picture-in-tikz
 \tikzset{
-    srv/.style  = {draw, rectangle, minimum width=1.8cm, 
-    minimum height=2cm, 
-    text depth=2cm,
+    srvos/.style  = {draw, rectangle, minimum width=3.5cm, 
+    minimum height=0.75cm, 
+    text width=2.9cm,
     text centered, 
     inner sep=1, 
-    text width=2.0cm, font=\footnotesize,
+    text width=2.0cm,
+    % font=\footnotesize, 
     draw=black, 
-    fill=blue!30},
-    % https://tex.stackexchange.com/questions/6899/tikz-multi-line-text-in-the-node-description
-    conNode/.style   = {draw, rectangle, minimum width=1.6cm, minimum height=1cm, text centered, text width=1.5cm, font=\footnotesize, draw=black,
-    fill=yellow!30 
-    % fill=white
+    % fill=blue!30
     },
-    dockerNode/.style = {draw, rectangle, minimum width=1.6cm, minimum height=0.5cm, text centered, text width=1.5cm, font=\footnotesize, draw=black, fill=yellow!30
+    dockerNode/.style = {draw, rectangle, minimum width=3.5cm, 
+    minimum height=0.75cm,
+    text width=2.9cm,
+    % text depth=0.15cm,
+    text centered, 
+    % font=\footnotesize, 
+    draw=black,
+    % fill=yellow!30
+    },
+    % https://tex.stackexchange.com/questions/159440/tikz-cylinder-alignment-and-fit
+    aufs/.style  = {draw, 
+    cylinder, shape border rotate=90, 
+    shape aspect=0.2,
+    minimum height=1.1cm, 
+    minimum width=1.4cm,
+    text depth=0.7cm,
+    % text height=1.5cm,
+    % font=\footnotesize,
+    draw=black, 
+    % fill=blue!30
+    },
+    aufsImage/.style  = {draw, 
+    cylinder, shape border rotate=90, 
+    shape aspect=0.2,
+    minimum height=0.5cm, 
+    minimum width=0.5cm,
+    % text depth=1cm,
+    % text height=1.5cm,
+    % font=\footnotesize,
+    draw=black, 
+    % fill=blue!30
+    },
+    % https://tex.stackexchange.com/questions/6899/tikz-multi-line-text-in-the-node-description
+    conNode/.style = {draw, rectangle, minimum width=1.4cm, minimum height=2cm,
+    text depth=1.5cm,
+    % text height=1.5cm,
+    text centered, text width=1.3cm,
+    % font=\footnotesize, 
+    draw=black,
+    % fill=yellow!30 
+    % fill=white
     },
     cloudNode/.style = {draw,
     cloud, 
-    cloud puffs=15.7, 
+    cloud puffs=18.7, 
     cloud ignores aspect, 
-    minimum width=1.5cm,
-    minimum height=0.5cm, 
+    minimum width=1.7cm,
+    minimum height=1cm, 
+    % font=\footnotesize, 
+    align=center,
+    fill=white
+    },
+    bigcloudNode/.style = {draw,
+    cloud, 
+    cloud puffs=25.7, 
+    cloud ignores aspect, 
+    minimum width=2cm,
+    text width=2cm,
+    minimum height=1cm, 
+    align=center,
+    fill=white
+    },
+    otherCloudNode/.style = {draw,
+    cloud, 
+    cloud puffs=25.7, 
+    cloud ignores aspect, 
+    minimum width=2cm,
+    text width=2cm,
+    minimum height=1cm, 
     align=center,
     fill=white
     },
 }
-\begin{figure}
+\begin{figure*}
 %  https://tex.stackexchange.com/questions/115087/how-can-i-embed-an-external-image-within-a-tikzpicture-environment
 % https://tex.stackexchange.com/questions/91320/arrows-from-cloud-cross-the-outer-line
-% \begin{scaletikzpicturetowidth}{\textwidth}
-% \begin{tikzpicture}[thick,scale=0.8, every node/.style={scale=0.8}]
-% \coordinate (cloudco) at (0,1.5);
-% \coordinate (serverAco) at (0,3.5);
-% \coordinate (serverBco) at (2.5,3.5);
+\begin{tikzpicture}[thick, 
+    font=\footnotesize,
+% scale=0.8, every node/.style={scale=0.8}
+]
+\coordinate (cloudco) at (3.5,1.5);
+\coordinate (dockerHubco) at (8.5,7);
+\coordinate (serverOtherco) at (11,4);
+\coordinate (serverAco) at (0,1);
+\coordinate (serverBco) at (7,1);
+\coordinate (clientAco) at (0,0);
+\coordinate (clientBco) at (7,0);
 % \coordinate (clientco) at (0.8,0);
-% % \draw[->] (cloudco) -- (90:2);
-% % server node A
-% \node [name=srvA, srv,draw] at (serverAco) {Server A};
-% \node [name=conA, conNode] at (srvA.center) {Offloading Container};
-% \node [name=dockerA,dockerNode] at ([yshift=1em]srvA.south) {Docker};
-% % draw line arrow from client to serverA
-% \draw[->] (clientco) -- (dockerA.south);
-% % server node B
-% \node [name=srvB, srv] at (serverBco) {Server B};
-% \node [name=dockerB,dockerNode] at ([yshift=1em]srvB.south) {Docker};
-% \node (phone) at (clientco)
-%     {\includegraphics[width=.01\textwidth]{figure/fig.jpg}};
-% \node[cloudNode] (cloud) at (cloudco) {WAN};
-% \draw[->] (phone) -- node[above]{moving} ++ (\textwidth/2,0);
-% \end{tikzpicture} 
+% \draw[->] (cloudco) -- (90:2);
+% 
+% Server OS Node A
+\node [name=srvosA, srvos,draw] at (serverAco) {OS(Linux)};
+% Docker Node
+\node [name=dockerA,dockerNode] at ([yshift=0.9em]srvosA.north) {Docker Daemon};
+% ConNode
+\node [name=conA, conNode, anchor=south, draw] at ([yshift=2em, xshift=-2.5em]dockerA.north) {Offloading Container};
+% AUFS
+% \node [name=aufsA, above = 1cm of srvosA, aufs,draw] {AUFS};
+\node [name=aufsA, aufs,anchor=south,draw] at ([yshift=2em, xshift=2.8em]dockerA.north) {AUFS};
+% AUFS image
+% https://tex.stackexchange.com/questions/50934/how-to-mark-a-node-in-a-graph-with-a-pattern
+\node[pattern=bricks, aufsImage] at ([xshift=-1em, yshift=1em]aufsA.south) {};
+\node[pattern=bricks, aufsImage] at ([xshift=1em, yshift=1em]aufsA.south) {};
+
+
+% Server OS Node B
+\node [name=srvosB, srvos,draw] at (serverBco) {OS(Linux)};
+% Docker Node
+\node [name=dockerB, dockerNode] at ([yshift=0.9em]srvosB.north) {Docker Daemon};
+% AUFS
+\node [name=aufsB, aufs, anchor=south, draw] at ([yshift=2em, xshift=-2.8em]dockerB.north) {AUFS};
+% AUFS image
+% https://tex.stackexchange.com/questions/50934/how-to-mark-a-node-in-a-graph-with-a-pattern
+\node[pattern=bricks, aufsImage] at ([xshift=-1em, yshift=1em]aufsB.south) {};
+\node[pattern=bricks, aufsImage] at ([xshift=1em, yshift=1em]aufsB.south) {};
+
+% ConNode
+\node [name=conB, conNode,anchor=south, draw] at ([yshift=2em, xshift=2.5em]dockerB.north) {Offloading Container};
+
+ 
+% Other servers between A and B
+ \node[otherCloudNode] (serverOther) at (serverOtherco) {Other Near Edge Servers};
+
+% transparent client node A B
+\node [name=clientA] at ([yshift=1em]clientAco){Source};
+\node [name=clientB] at ([yshift=1em]clientBco){Target};
+
+
+% pre download images
+% https://tex.stackexchange.com/questions/99193/rotate-align-text-on-arrows-in-tikz
+% https://tex.stackexchange.com/questions/27222/draw-an-arc-between-2-nodes-and-label-it-in-tikz
+\draw[
+% green, 
+% dashed, 
+bend right,
+->] (dockerHubco) to
+% node[black, 
+% % sloped, 
+% anchor=center, above] {
+% % \ref{predownload}. Download Images
+% }
+(aufsB.north);
+
+\draw[
+% green, dashed, 
+bend left, ->] (dockerHubco) to 
+% node[black, 
+% % sloped,
+% anchor=center, above] {
+% % \ref{predownload}. Download Images
+% }
+(serverOther.north);
+
+% DockerHub
+\node[ bigcloudNode] (dockerhub) at (dockerHubco) {Docker Hub};
+ 
+\node[anchor=center, below = of dockerhub] {
+\ref{predownload}. Pre-Download Images
+}
+ 
+% send pre dump mem
+\draw[
+% green, 
+dashed, ->] 
+([yshift=2.3em]conA.east) 
+-- node[black, above
+% , text width=2cm
+]{
+\ref{predump}. Send Pre-Dump Memory
+} 
+node[below, black
+% , text width=2cm
+]{\ref{img-sync}.
+Memory Difference
+}
+([yshift=2.3em]conB.west);
+
+% pre dump mem on A
+\draw[<-] 
+([xshift=-2.5em]dockerA.north) 
+-- 
+node[black, left,text width=2cm,align=left
+% , text width=2cm
+]{
+\ref{predump}.Pre-dump
+\\
+\ref{checkpoint}. Final Dump
+} 
+([xshift=0em]conA.south);
+
+
+
+% request migration
+\draw[->] ([xshift=2em]clientAco) -- 
+node[right, black]{
+\ref{prepare}. Migration Request
+}
+([xshift=2em]srvosA.south);
+
+
+
+% prepare
+\draw[
+% green, 
+dashed, ->] ([yshift=0em]aufsA.east) -- 
+node[above, black]{
+\ref{prepare}. Match Image Layers
+}
+node[below, black]{
+\ref{fs-sync}. Container Layer Sync
+}
+([yshift=0em]aufsB.west);
+
+% ID remapping on source
+\draw[<->] 
+([xshift=2.8em]dockerA.north) 
+-- 
+node[black, right,text width=2cm,align=left
+% , text width=2cm
+]{
+\ref{prepare}. ID Remapping
+} 
+([xshift=0em]aufsA.south);
+
+% ID remapping & reload daemon on target
+\draw[<->] 
+([xshift=-2.8em]dockerB.north) 
+-- 
+node[black, left,text width=2cm,align=left
+% , text width=2cm
+]{
+\ref{prepare}. ID Remapping
+\\
+\ref{daemon-Reload}. Reload Daemon
+} 
+([xshift=0em]aufsB.south);
+
+
+% Memory Difference apply & restore.
+
+\draw[<->] 
+([xshift=1em]dockerB.north) 
+-- 
+node[black, right,
+text width=4cm,
+align=left
+% , text width=2cm
+]{
+\ref{img-sync}. Apply Memory Difference
+\\
+\ref{restore}. ID Remapping
+} 
+([xshift=-1.5em]conB.south);
+
+
+
+% WAN between A and B
+ \node[cloudNode] (cloud) at (cloudco) {WAN};
+ 
+\end{tikzpicture} 
 \caption{ Offloading Service Handoff Implementation. }
 \label{fig:migstages}
-\end{figure}
+\end{figure*}

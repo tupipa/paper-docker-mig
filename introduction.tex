@@ -24,9 +24,7 @@ Thirdly, the transferred data will include both the file system as well as the c
 Last but not the least, we need to find a way to mitigate the user-experience latency caused by migrating a container across different edge servers. Use experienced latency could be shorter than the actual migration time by well designed strategies of migration process. Ideally, we should make it close to a seamless service hand-off where users cannot notice their offloading edge server has been changed.
 
 In order to meet those challenges, we proposed a framework that could enable high speed offloading service hand-off across edge servers by only encapsulate and transfer the thin writable layer of the application and its runtime status based on Docker's  experimental feature of checkpoint and restore. The contributions of this paper are listed as below:
-
 \begin{itemize}
-    
     \item It analyses the status of current techniques to do live migration for Docker containers. It evaluates the performance of some state-of-the-art works that could do Docker container live migration and expose the problems in it.
     
      \item It analyses the detailed storage management of Docker containers based on AUFS storage driver. It systematically introduces the layer management and images stacking methodology inside the Docker storage and reveals the proper way to leverage those mechanisms to speed up the live migration.
