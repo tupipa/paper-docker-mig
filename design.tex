@@ -91,30 +91,30 @@ By doing so, the image layer stack list for the migrated container will be reset
 % download the Docker image of the offloading application from Docker Hub.
 
 
-\subsection{Get Memory Difference} \label{design:memDiff}
+\subsection{Pre-Dump \& Dirty Memory Synchronization} \label{design:memDiff}
 
-In order to reduce the total memory image size during hand-off, we checkpoint the container and get a snapshot of the container's memory in stage \ref{predump}. The snapshot was transferred before the hand-off starts, just as the application's Docker images, which are also downloaded before the hand-off starts.
+In order to reduce the total memory image size during hand-off, we checkpoint the container and dump a snapshot of the container's memory in stage \ref{predump}. This could happen as soon as the container is created, or more enlightened, we could dump the memory when the most frequently used binary programs in the application are loaded into the memory. This snapshot of memory will be served as the base memory image for the live migration that happens next.
 
-Upon the hand-off starts, we checkpoint the container and stop it. Then we do a diff operation on the new memory dump images along with the old snapshot we got from stage \ref{predump}. Then we only need to transfer the difference of the dump memory to the target node. We use Xdelta3 to get the memory difference.
+After the base memory image is dumped, it is transferred immediately to the server. We assume the transfer will be finished before the hand-off starts. It's reasonable since we can send the base memory image as early as seconds after the container starts. 
+Also, the application's Docker images on the near edge servers are also started to download after the container starts and before the hand-off starts, we could process those two steps in parallel to reduce the total time cost. This is further discussed in section \ref{design:pipe}. Therefore, upon the hand-off starts, we can have the base memory image of the container already on the target server. 
+
+Then after the client being served at the source node and starts to move into another edge server's service area, a migration request will be sent to the source node. 
+% As for who send the migration request, it's out of the scope of this paper.
+
+Once the migration request is received, we will  checkpoint and stop the container. After get the checkpointed memory, we do a diff operation on it from the base memory image we dumped in stage \ref{predump}. 
+Then we only need to transfer the difference of the dump memory to the target node. 
 
 \input{figure/dumps/diff_size.tex}
 
-\subsection{Compression of the Transferred Data}\label{design:compression}
+\subsection{Data Transfer}\label{design:compression}
 
+% During migration, the files need to be transferred includes both text files as well as binary files. 
 During the live migration of a container, we mainly have 4 kinds of data need to transfer:
+the layer stacks information, the file system of thin writable \textit{container layer}, the meta data files of the container, and snapshot of the container's memory and image difference. Some of the data is in the form of messages, such as layer stacks information. Some of them are plain text files, such as most contents. And the memory snapshots and image differences are all binary image files. According to the feature of the files, we use different strategies to transfer the data.
 
-The layer stacks information, the container writable layer, the meta data files of the container, and the main memory images checkpointed by CRIU. 
+The layer stacks information is send via UNIX RPC API implementation in \cite{phaul}, which is based on a socket connection created by python scripts. Those information is only a list of SHA256 ID strings, so it's quite efficient to be sent as a socket message. There is no need to compress it since the overhead of compression would mask its benefits.
 
-% In order to speed up the synchronization process, we combine both the compression techniques and synchronization tools. 
-
-The layer stacks information is send via RPC socket connection. Those information is only a list of SHA256 ID strings, so it's quite efficient to be sent as a socket message. There is no need to compress it.
-
-The container writable layer and meta data files are regular files in the storage system, so we use bzip2  to compress and send via ssh connection.
-
-The dump memory images are binary data, which is not efficient to compressed using bzip2. So we use ??? to compress and send via ssh connections.
-
-\subsection{Pipelined \& Parallel Processing}\label{design:pipe}
-
+As for other data, including the container writable layer, meta data files, the dump memory images, and image differences, we use bzip2 to compress and send via authorized ssh connection.
 
 % \ref{predump}, \ref{img-sync}.
 
@@ -130,3 +130,18 @@ The dump memory images are binary data, which is not efficient to compressed usi
 
 % TODO: rsync vs. tar comparison
 
+
+\subsection{Parallel \&  Pipelined Processing}\label{design:pipe}
+
+With the help of parallel and pipelined processing,  we could improve the efficiency of the whole process and reduce the total migration time.
+
+% From stage \ref{prepare} to stage \ref{restore}, there are lots of tasks that could be run in parallel between the source and target servers.
+
+Firstly, as we mentioned above in \ref{design:memDiff}, starting a container will trigger two events to happen in parallel: downloading/synchroizing images from Registry in cloud, and pre-dumping/sending base memory images to the possible edge servers near the source node. Those two process could be run at the same time in order to reduce the total time of stage \ref{prepare} and \ref{predump}. When the possible target servers are downloading images from Registry, the source server will checkpointing and sending the running container's base memory images to the possible target server.
+
+Secondly, daemon reload in stage \ref{daemon-Reload} is happend on target host, it could be processed while the source host is sending the memory difference to the target host in stage \ref{img-sync}. Stage \ref{fs-sync} cannot be paralleled with \ref{daemon-Reload}, because daemon reload on the target host requires the configuration data files sent in stage \ref{fs-sync}.
+
+Thirdly,
+in stage \ref{fs-sync}, we use compression to send all files in the \textit{container layer} over an authorized ssh connection between the source and target host. The compression and transfer of the \textit{container layer} can be pipelined using Linux pipes.
+
+Lastly, in stage \ref{img-sync}, after we get the final memory snapshot, we will need to get memory difference by comparing the base memory images with the images in the new snapshot, then we send the difference to target and patch the difference to the base memory image on the target host. This whole process could also be piplined using Linux pipes. 

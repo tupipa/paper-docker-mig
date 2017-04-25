@@ -11,10 +11,10 @@ As we mentioned above, Docker use layered storage for its containers. Each Docke
 \smallbreak
 \subsubsection{\textit{Container Layer} and Base Image Layers}
 ~\smallbreak
-When a new container is created, a new, thin, writable storage layer is created on top of the underlying image layer stack, which is often called the \textit{``container layer''}. All changes made to the running container -- such as writing new files, modifying existing files, and deleting files - are written to this thin writable \textit{container layer}\cite{dockerlayer}.
+Whenever a new container is created, a new, thin, writable storage layer is created on top of the underlying image layer stack, which is called the \textit{``container layer''}. All changes made to this running container -- such as writing new files, modifying existing files, and deleting files - are written to this thin writable \textit{container layer}\cite{dockerlayer}.
 \input{figure/figure-layer-stack.tex}
 For example, 
-Figure~\ref{fig:stacklist} shows the stacked image layers for OpenFace application. The dashed box on the top is \textit{container layer} for openface. Underlying are base image layers. To resolve the access request for a file name, the storage driver will search the file name from top layer towards the bottom layer, the first copy of the file will be returned for accessing, regardless the same file name on the underlying layers.
+Figure~\ref{fig:stacklist} shows the stacked image layers for OpenFace application. The dashed box on the top is the \textit{container layer} of openface. All the underlying layers are base image layers. To resolve the access request for a file name, the storage driver will search the file name from top layer towards the bottom layer, the first copy of the file will be returned for accessing, regardless the any other file with same name in the underlying layers.
 
 % It greatly simplifies the process of setting environment for any software platform. 
 
@@ -27,21 +27,22 @@ Figure~\ref{fig:stacklist} shows the stacked image layers for OpenFace applicati
 Since Docker 1.10, all the image and layer data are addressed by secure content SHA256 hash ID. 
 This addressable image design is supposed to improve security by avoiding ID collisions, and maintaining data integrity after pull, push, load, and save operations. It enables better sharing of layers by allowing many images to freely share their layers locally even if they didn’t come from the same build\cite{dockerlayer}. 
 
-However, due to the active development of Docker platform and its relatively young ages of history, there is no available articles illustrating how those addressable images worked by those SHA256 hash. 
+% However, due to the active development of Docker platform and its relatively young ages of history, there is no existing effort dived into how those addressable images worked by those SHA256 hash. 
+However, there is no existing effort dived into how those addressable images worked by those SHA256 hash.
 % original and cache IDs are used and maintained throughout the life cycle of one container, as well as the life cycle of the underlying docker daemon. 
-
-By investigating into the source code of Docker as well as its storage drivers, we find out how Docker platform addresses different storage layers and propose our methods to leverage those layers in the live migration of Docker containers.
+%
+By investigating into the source code of Docker as well as its storage drivers, we explain how Docker platform addresses different storage layers and propose our methods to leverage those layers in the live migration of Docker containers.
 % keeps track of those mapping relationship. 
-
+%
 For example, we find that 
 if the same image is downloaded from the same build on the cloud, Docker will mapping the layers' original layer IDs to a new secure content hash, called `cache ID'. Every image layer's original ID will be replaced with its cache ID. From then on, Docker daemon will address the image layer by this cache ID when it creates, starts, stops, or checkpoints/restores a container. 
-
+% shanhe: might need to explain, how this finding helps?
 
 \smallbreak
 \subsubsection{ID Matching Between Docker Host} \label{intro:idMatching}
 ~\smallbreak
 
-As we discussed above, 
+As we have discussed above, 
 the image layer on the cloud will have different cache IDs when downloaded to different Docker host. 
 % It becomes a challenge to resolve those addressable IDs when we migrate a container between different hosts. 
 Therefore, if we want to share the common image layers between different Docker hosts, we need to resolve the image layers mapping on different Docker host. 

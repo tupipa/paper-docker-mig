@@ -2,14 +2,14 @@
 In this section, we evaluate the performance of the system for different workloads under different network and computing conditions. Specifically, we evaluate the offloading service handoff system by showing in what extent the total hand-off time and total transferred size are reduced.
 
 In our experiment, we set up three migration scenarios
-\footnote{TODO:need new applications of experiments}: 
+% \footnote{TODO:need new applications of experiments}: 
 \begin{enumerate}
     \item Emulated bandwidth:
     Docker Hosts are two virtual machines on the same Desktop server. On the source virtual machine, we use Linux Traffic Control (tc\cite{tc} )  tool to control network traffic. Limited the bandwidth to 5Mbps, 15Mbps, 20Mbps, 25Mpbs and 30Mpbs. The latency is set to a fixed 50ms \footnote{some cites here}.
     Docker containers are migrated from the Docker host on source VM to the Docker host on another VM.
     
-    \item Laptop-Wireless-WAN:
-    The migration source host is a virtual machine on the Laptop, another is the virtual machine on the server as in 1). Both virtual machines are running the same version of Docker.  They are connected through WAN network with about 2 miles geological distance. Each virtual machines is running within its own LAN network. The virtual machine on Laptop connects to the internet through wireless adapter. The virtual machine on the server is connected to the Internet via Ethernet. 
+    % \item Laptop-Wireless-WAN:
+    % The migration source host is a virtual machine on the Laptop, another is the virtual machine on the server as in 1). Both virtual machines are running the same version of Docker.  They are connected through WAN network with about 2 miles geological distance. Each virtual machines is running within its own LAN network. The virtual machine on Laptop connects to the internet through wireless adapter. The virtual machine on the server is connected to the Internet via Ethernet. 
 \end{enumerate}
 
 The desktop server is equipped with Intel$^{R}$ Core$^{TM}$ i3-6100 Processor (3.70GHz, 2 cores, 4 threads) and 16GB DDR4 memory. Two virtual machines are running with 2 vcpus and 4GB memory each.
