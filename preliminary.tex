@@ -1,5 +1,5 @@
 
-In this section, we dive into the inner details of Docker container's layered storage system and show which part of the file system is necessary to be transferred during live migration. 
+In this section, we discuss the background of our work and dive into the inner details of Docker container's layered storage system and show which part of the file system is necessary to be transferred during live migration. 
 % Before we start to discuss our design, we need to first introduce some inner details about Docker and how it manages it's layered storage. 
 Although Docker is becoming more and more popular and widely adopted in the industrial world, the inner details about how it manages the layered storage is still not well-documented. As far as we know, This is the first paper that illustrates the inner details of Docker layered storage and leverage it to speed up the live migration of Docker containers.
 
@@ -8,7 +8,7 @@ Although Docker is becoming more and more popular and widely adopted in the indu
 
 
 
-\subsection{Docker Container Live Migration in Practice }
+\subsection{Docker Container Live Migration in Practice }\label{migpractice}
 
 Although there is no official live migration tools for Docker containers yet, many enthusiastic developers have composed some customized tool for some versions of Docker platform, which shows great feasibility of Docker containers' live migration. For example, Ross Boucher's fork \cite{boucherPhaul} of P.haul
 % \cite{phaul}

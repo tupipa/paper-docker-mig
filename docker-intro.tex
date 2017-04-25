@@ -68,7 +68,7 @@ Docker delegate the task of managing the container's layered file system to its 
 The Docker storage driver is designed to provide a single unified view from a stack of image layers.
 Users can choose different kinds of storage driver that are best for their environment and particular use-cases. The default storage driver on Docker is AUFS. Therefore, we take this as an example to introduce the layered images management.
 
-AUFS storage driver implements Docker image layers by a union mount system. Union Mount is a way of combining numerous directories into one directory that looks like it contains the content from all the them \cite{unionMount}. Using Union filesystems merge all the files for each image layer together and presents them as one single read-only directory at the union mount point. If there are duplicate files in different layers, only the file on the higher level layer is available.
+AUFS storage driver implements Docker image layers by a union mount system. Union Mount is a way of combining numerous directories into one directory that looks like it contains the content from all the them \cite{aufs}. Using Union filesystems merge all the files for each image layer together and presents them as one single read-only directory at the union mount point. If there are duplicate files in different layers, only the file on the higher level layer is available.
 
 AUFS driver has three directories: layers, diff, and mnt. `layers' directory stores the metadata of how image layers are stacked together. `diff' directory stores the exact data inside each layers. `mnt' directory stores the mount points for the root file system of all the containers. 
 

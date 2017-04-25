@@ -92,7 +92,7 @@
 % scale=0.8, every node/.style={scale=0.8}
 ]
 \coordinate (cloudco) at (3.5,1.5);
-\coordinate (dockerHubco) at (8.5,7);
+\coordinate (dockerHubco) at (8.5,6.5);
 \coordinate (serverOtherco) at (11,4);
 \coordinate (serverAco) at (0,1);
 \coordinate (serverBco) at (7,1);
@@ -131,7 +131,15 @@
 \node [name=conB, conNode,anchor=south, draw] at ([yshift=2em, xshift=2.5em]dockerB.north) {Offloading Container};
 
  
-% Other servers between A and B
+% % DockerHub
+% \node[ bigcloudNode] (dockerhub) at (dockerHubco) {Docker Hub};
+% % notes under Docker hub
+% \node[anchor=center, below = of dockerhub] {
+% \ref{predownload}. Pre-Download Images
+% };
+
+ 
+% Other servers except B
  \node[otherCloudNode] (serverOther) at (serverOtherco) {Other Near Edge Servers};
 
 % transparent client node A B
@@ -147,30 +155,32 @@
 % dashed, 
 bend right,
 ->] (dockerHubco) to
-% node[black, 
-% % sloped, 
-% anchor=center, above] {
-% % \ref{predownload}. Download Images
-% }
+node[black, 
+% sloped, 
+anchor=center, above] {
+% \ref{predownload}. Download Images
+}
 (aufsB.north);
 
 \draw[
 % green, dashed, 
 bend left, ->] (dockerHubco) to 
-% node[black, 
-% % sloped,
-% anchor=center, above] {
-% % \ref{predownload}. Download Images
-% }
+node[black, 
+% sloped,
+anchor=center, above] {
+% \ref{predownload}. Download Images
+}
 (serverOther.north);
 
+ 
 % DockerHub
 \node[ bigcloudNode] (dockerhub) at (dockerHubco) {Docker Hub};
- 
-\node[anchor=center, below = of dockerhub] {
+% notes under Docker hub
+\node[anchor=center, below = of dockerhub, text width = 3cm, yshift=2em, xshift=1em] {
 \ref{predownload}. Pre-Download Images
-}
- 
+};
+
+
 % send pre dump mem
 \draw[
 % green, 
@@ -265,12 +275,12 @@ align=left
 } 
 ([xshift=-1.5em]conB.south);
 
-
-
 % WAN between A and B
  \node[cloudNode] (cloud) at (cloudco) {WAN};
  
 \end{tikzpicture} 
-\caption{ Offloading Service Handoff Implementation. }
+\caption{System Architecture for Offloading Service Hand-off 
+% Based on Docker Container's Migration. 
+}
 \label{fig:migstages}
 \end{figure*}

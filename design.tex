@@ -1,25 +1,21 @@
 
-In this section, we introduce our design of the  service hand-off framework based on live migration of the containers. 
+In this section, we introduce our design of the  service hand-off framework based on live migration of the containers. We will first briefly introduce the different stages of service hand-off in our framework. Then in section \ref{design:mapImage}, we will discuss how we enable the sharing of image layers between two different Docker hosts with different cache IDs. In section \ref{design:memDiff}, \ref{design:compression}, and \ref{design:pipe}, we will introduce the details of how we can further speed up the migration by transferring dirty memory, compression, pipelined and paralleled processing during the migration of Docker containers.
 
 \subsection{System Overview}
 
 \input{figure/figure-before-after.tex}
 
 
-Figure~\ref{fig:before-after} shows the status of offloading services before and after migration. Before migration, mobile client offloads its computations to its nearest edge server \textbf{A}, where all the computations are processed inside a Docker container. When the mobile client moves far away from server \textbf{A} and reaches the service area of edge server \textbf{B}, it's offloading computation will be migrated from server \textbf{A} to server \textbf{B}. This is done via migration of its offloading Docker containers, where all the runtime memory states as well as its storage layer are transferred to server \textbf{B}.
+Figure~\ref{fig:before-after} shows an example usage scenario of offloading service hand-off based on Docker container migration. Before migration, mobile client offloads its computations to its nearest edge server \textbf{A}, where all the computations are processed inside a Docker container. When the mobile client moves far away from server \textbf{A} and reaches the service area of edge server \textbf{B}, it's offloading computation will be migrated from server \textbf{A} to server \textbf{B}. This is done via migration of its offloading Docker containers, where all the runtime memory states as well as its storage data are transferred to the target server \textbf{B}.
 
-
-\input{figure/figure-migration-stages.tex}
-
-
-As shown in Figure~\ref{fig:migstages},
 % shows the overview of the whole migration stages. Generally, 
-our architecture supports high speed offloading service hand-off through the following steps:
+Figure~\ref{fig:migstages} shows the architecture in different processing stages described below:
+% our architecture supports high speed offloading service hand-off through the following steps:
 % \begin{enumerate*}[series = tobecont, itemjoin = \quad]
 
 \begin{enumerate}[label=\textbf{S\arabic*}]
 
-\item \label{predownload}\textbf{Pre-download Application Image.} In this stage, we will dynamically predict the possible target edge servers and pre-download the offloading application's Docker images on each target servers.
+\item \label{predownload}\textbf{Pre-download Application Image.} Upon the container starts and offers offloading service to the client, we also dynamically predict the possible target edge servers that are near to the client. Then we request those target servers to download the Docker image of the offloading application from Docker Hub.
 
 \item \label{predump} \textbf{Pre-dump Container.} Before we received the migration request, we will try to dump a snapshot of the container's runtime memory and send to the possible target edge servers we found in stage \ref{predownload}. The container is still running during this stage. 
 
@@ -37,25 +33,25 @@ From this point the container will stop running on the source server and waiting
 \item \label{img-sync} \textbf{Get Memory Difference.} After we get checkpointed images from the final dump of the container, we then compare this final dump memory to the pre-dumped memory in stage \ref{predump}. We then could get the memory difference and send only these difference to the target server. 
 % \item \label{finalsync} Synchronize the file system for the last time, updating only the changed files of the container layer before last synchronization in \ref{firstsync}.
 
-\item \label{restore} \textbf{Restore Container.} Restore container on the target host.
+\item \label{restore} \textbf{Restore Container.} Finally, we will restore container on the target host with all its runtime status retrieved. At the same time, the system will go to stage \ref{predownload} to prepare the next iteration of service handoff in the future.
 
 \end{enumerate}
 
 
 % (Before migration, both the source and target edge server have the application base images downloaded.)
  
-\subsection{Match Shared Image Layers}
+\subsection{Match Shared Image Layers} \label{design:mapImage}
 
 As we introduced above, in the AUFS-based addressable layers, the local cached ID for each downloaded image layer is stored in 
 
-\subsection{Get Memory Difference}
+\subsection{Get Memory Difference} \label{design:memDiff}
 In order to reduce the total memory image size during hand-off, we checkpoint the container and get a snapshot of the container's memory in stage \ref{predump}. The snapshot was transferred before the hand-off starts, just as the application's Docker images, which are also downloaded before the hand-off starts.
 
 Upon the hand-off starts, we checkpoint the container and stop it. Then we do a diff operation on the new memory dump images along with the old snapshot we got from stage \ref{predump}. Then we only need to transfer the difference of the dump memory to the target node. We use Xdelta3 to get the memory difference.
 
 \input{figure/diff_size.tex}
 
-\subsection{Compression of the Transferred Data}
+\subsection{Compression of the Transferred Data}\label{design:compression}
 
 During the live migration of a container, we mainly have 4 kinds of data need to transfer:
 
@@ -69,7 +65,7 @@ The container writable layer and meta data files are regular files in the storag
 
 The dump memory images are binary data, which is not efficient to compressed using bzip2. So we use ??? to compress and send via ssh connections.
 
-\subsection{Pipelined \& Parallel Processing}
+\subsection{Pipelined \& Parallel Processing}\label{design:pipe}
 
 
 % \ref{predump}, \ref{img-sync}.
