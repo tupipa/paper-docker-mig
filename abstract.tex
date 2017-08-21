@@ -7,10 +7,12 @@ However, fast migration of offloading services across edge servers under WAN net
 %
 %
 %
-In this paper, we present a novel service handoff system, which seamlessly migrates offloading service to the client's nearest edge server while the mobile client is moving. Offloading services are running inside Docker containers. Service handoff is achieved via container's migration. 
+In this paper, we present a novel service handoff system, which seamlessly migrates offloading service to the client's nearest edge server while the mobile client is moving. 
+% Offloading services are running inside Docker containers. 
+Service handoff is achieved via container's migration. 
 % 
-We identify the performance problem of the state-of-the-art work for Docker container's migration. 
-We analyze storage management of Docker containers based with AUFS storage driver .
+We identify the performance problem of the state-of-the-art work for Docker container's migration.
+% We analyze storage management of Docker containers based with AUFS storage driver .
 %
 Base on our systematically study of the container layer management and images stacking,
 we propose a migration method which leverages the layered storage system to reduce file system synchronization overhead without depending on the distributed file system. 

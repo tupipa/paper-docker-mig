@@ -43,7 +43,7 @@
    }
   
   
-\begin{figure*}
+\begin{figure*}[htb!]
 \centering
 % http://tex.stackexchange.com/questions/5073/making-a-simple-directory-tree
 \begin{forest}
@@ -76,7 +76,7 @@ for tree={
     [<conID>
         [config.v2.json, file]
         % [resolve.conf, file]
-        [..., file]
+        % [..., file]
     ]
     % [<conID1>
     %     % [config.v2.json, file]
@@ -104,7 +104,8 @@ for tree={
         ]
     ]
     [layers/
-        [<rootfs ID>, file]
+        [<rootfs ID>(-init), file]
+        % [<rootfs ID>, file]
     ]
     [diff/
         [<layer ID1>/

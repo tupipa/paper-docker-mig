@@ -1,14 +1,19 @@
 
+% __lele
+
 \input{figure/figure-before-after.tex}
 
-In this section, we introduce the design of our service hand-off framework based on the migration of Docker containers. We will first briefly introduce a simple usage scenario, give an overview of system architecture and the algorithm of service handoff. Then in section \ref{design:mapImage}, we will discuss our methodology of storage synchronization based on Docker image layers' sharing between two different Docker hosts. Finally, in section \ref{design:memDiff}, \ref{design:compression}, and \ref{design:pipe}, we will discuss more strategies to further accelerate the migration speed by memory difference transfer, file compression, pipelined and paralleled processing during the migration of Docker containers.
+In this section, we introduce the design of our service hand-off framework based on Docker container migration. Firstly, we introduce a simple usage scenario, give an overview of system architecture and the algorithm of service handoff. Secondly, in section \ref{design:syncImage} and \ref{design:idremapping}, we discuss our methodology of storage synchronization based on Docker image layers' sharing between two different Docker hosts. Finally, in section \ref{design:memDiff}, \ref{design:compression}, and \ref{design:pipe}, we show how to further accelerate the migration speed by memory difference transfer, file compression, pipelined and paralleled processing during the migration of Docker containers.
 
 \subsection{System Overview}
 
 Figure~\ref{fig:before-after} shows an exemplar usage scenario of offloading service hand-off based on Docker container migration. 
 In this example (OpenFace\cite{openface2016}), the mobile client achieves real-time face recognition by offloading the workloads to an edge server. 
-The mobile client continuously reads images from camera to sends them to the edge server. 
-The edge server runs the face recognition application in a container, processing the image via deep neural networks algorithm and sends the recognition result  back to the client. 
+The mobile client continuously reads images from camera and sends them to the edge server. 
+The edge server runs the face recognition application in a container, processes the image via deep neural networks algorithm, and finally sends the recognition result  back to the client. 
+
+All containers are running inside Virtual Machines (for example, VM \textit{A}, VM \textit{B} in Figure \ref{fig:before-after} ). This allows users to scale up the deployment more easily and control the isolation among the applications in different levels.
+
 
 Before migration, mobile client offloads its computations to its nearest edge server \textbf{A}, where all the computations are processed inside a Docker container. 
 In this paper, we simply call the container which computes the offloading workloads on the server side, the \textit{offloading container}.
@@ -41,7 +46,10 @@ From this point the container will stop running on the source server and waiting
 \item \label{img-sync} \textbf{Get, Send, and Apply Memory Difference.} After we get checkpointed images from the final dump of the container, we then compare this final dump memory to the pre-dumped memory in stage \ref{predump}. We then could get the memory difference and send only these difference to the target server. 
 % \item \label{finalsync} Synchronize the file system for the last time, updating only the changed files of the container layer before last synchronization in \ref{firstsync}.
 
-\item \label{restore} \textbf{Restore Container.} Finally, we will restore container on the target host with all its runtime status retrieved. At the same time, the system will go to stage \ref{prepare} to prepare the next iteration of service handoff in the future.
+\item \label{restore} \textbf{Restore Container.} After all transfer finished, we will restore container on the target host with all its runtime status retrieved. At the same time, the system will go to stage \ref{prepare} to prepare the next iteration of service handoff in the future. Until now, the migration has been finished and the user starts to be served on the target edge server.
+
+\item \label{clean} \textbf{Clean Up Source Node.} Finally, on the source node, we need to clean up the footprints for the offloading service. To do this, we just simply remove the container, then all its related runtime footprints will be gone. We might need to carefully choose the right time when to clean it up, in case of the user will be moving back sometime in the future. If this is the case, it will be better if we still keep the old footprints thus to avoid some transmission overhead. 
+
 
 \end{enumerate}
 
@@ -52,7 +60,7 @@ From this point the container will stop running on the source server and waiting
 % 
 % 
 
-\subsection{Strategy to Synchronize Storage Layers} \label{design:mapImage}
+\subsection{Strategy to Synchronize Storage Layers} \label{design:syncImage}
 
 As we have introduced, Docker's storage driver supports layered images where each layer represents the summary of file system differences. A running container's layered storage is composed by one writable container layer and several read only base image layers. 
 
@@ -68,7 +76,7 @@ By downloading the common image layer from the Registry, we reduce the traffic b
 
 Finally, for the base image layers create locally by the container, we transfer each of such image layer upon the image layer is created, no matter whether the migration has started or not. 
 
-\subsection{Layer ID Remapping} \label{idremapping}
+\subsection{Layer ID Remapping} \label{design:idremapping}
 
 As discussed in section \ref{intro:idMatching} and \ref{intro:aufs:layerIDMapping}. The downloaded images from the common Registry have different cache IDs exposed to each Docker host. In order to share these common images across different Docker host, we need to match these image layers by its original IDs instead of the cache IDs.
 
@@ -141,3 +149,14 @@ Thirdly,
 in stage \ref{fs-sync}, we use compression to send all files in the \textit{container layer} over an authorized ssh connection between the source and target host. The compression and transfer of the \textit{container layer} can be pipelined using Linux pipes.
 
 Lastly, in stage \ref{img-sync}, after we get the final memory snapshot, we will need to get memory difference by comparing the base memory images with the images in the new snapshot, then we send the difference to target and patch the difference to the base memory image on the target host. This whole process could also be piplined using Linux pipes. 
+
+
+
+\subsection{Security Isolation}
+
+Finally, it's critical to minimize the security risk of the offloading services running on the edge servers. Isolation between different services could provide certain level of security. Our framework provides isolated running environment for the offloading service via two layers of the system virtualization hierarchically: different services can be isolated by running inside different \textit{Linux Containers}, and different containers are allowed to be further isolated by running inside \textit{Virtual Machine}. 
+
+Apparently, more thorough security solution need to be designed before the framework can be really deployed to the real world, such as efficient run-time monitoring, secure system updating, etc.. But here we focus on the mobility of services from performance side and leave most security work as the future work.
+
+
+

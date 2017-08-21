@@ -1,10 +1,9 @@
 
-In this section, we discuss the background of our work and dive into the inner details of Docker container's layered storage system and identify which part of the file system is necessary to be transferred during migration. 
+In this section, we will discuss the background of our work and dive into the inner details of Docker container's layered storage system. We will also identify which part of the file system is necessary to be transferred during migration. 
 % Before we start to discuss our design, we need to first introduce some inner details about Docker and how it manages it's layered storage. 
-Although Docker is becoming more and more popular and widely adopted in the industrial world, the inner details about how it manages the layered storage is still not well-documented. 
-To the author's knowledge, we are the first to examine the inner details of Docker layered storage and leverage it to speed up the migration of Docker containers.
 
-\input{figure/aufsIntro/aufs-tree-fd.tex}
+Docker is becoming more and more popular and widely adopted in the industrial world, however, the inner details about how it manages the layered storage is still not well-documented. 
+To the author's knowledge, we are the first to examine the inner details of Docker layered storage and leverage it to speed up the migration of Docker containers. Our work doesn't require any change of the Docker's software stack.
 
 \input{docker-intro.tex}
 
@@ -15,17 +14,17 @@ To the author's knowledge, we are the first to examine the inner details of Dock
 
 \input{figure/table-phaul.tex}
 
-Although there is no official  migration tool for Docker containers yet, many enthusiastic developers have composed some customized tools for certain versions of Docker platforms, which have demonstrated the feasibility of Docker containers  migration. For example, project \cite{boucherPhaul} 
-can be used for migration of Docker containers for Docker 1.10-dev. However, we found that this method simply transfers all the file system of that container from source server to the target server, where the files are actually composed by all the image layers of that container. 
+Although there is no official  migration tool for Docker containers yet, many enthusiastic developers have composed some customized tools for certain versions of Docker platforms, which have demonstrated the feasibility of Docker containers  migration. For example, CRIU project \cite{criu} supports migration of Docker-1.9.0-dev, and project \cite{boucherPhaul} 
+ extends it to support Docker 1.10-dev. However, both methods simply transfers all the files under the container's root file system from source server to the target server, where the files are actually composed by all the image layers of the migrated container. The methods just ignore the underlying union mounting of the storage layers.
 This behavior would cause severe problems from several aspects:
 % \begin{enumerate}[series = tobecont , itemjoin = \quad]
 \begin{enumerate}[series = tobecont]
     \item It will corrupt the layered file system inside the container after restored  on the target server. The tools just transfer the whole file system into one directory on the destination server and mount it as root directory for the container. After restored on the target host, the container no longer maintains its layered image stacks as on the source node. 
     \item It substantially reduces the efficiency and robustness of migration.
-    It will synchronize the whole file system of the Docker container using Linux \textit{rsync} command while the container is still running. Firstly, run \textit{rsync} command on a whole file system would be pretty slow due to the large amount of files.  Secondly, this can result in file contention when container and \textit{rsync} trying to access the same files. The contention will cause error for synchronization which can cause migration error or failure. 
+    It will synchronize the whole file system of the Docker container using Linux \textit{rsync} command while the container is still running. Firstly, run \textit{rsync} command on a whole file system would be pretty slow due to the large amount of files.  Secondly, this can result in file contention when the running container and \textit{rsync} on the source node trying to access the same files. The contention will cause error for synchronization which can cause migration error or failure. 
 \end{enumerate}
 
-To verify our claim, we have tested this tool with experiments to migrate containers through different network connections. Our experiments use one simple container, Busybox, and an application, OpenFace, for edge server offloading.  Busybox is a stripped-down Unix tools in a single executable file, which results in a very tiny file system inside the container. OpenFace\cite{openface2016} is an application that dispatches images from mobile device to the edge server, then executes the face recognition algorithm on server, and finally sends back a text string of the name of the person to the mobile device. The container has a huge file system, which is approximate to $2$ gigabytes.
+To verify our claim, we have tested this tool with experiments to migrate containers through different network connections. Our experiments use one simple container, Busybox, and an application, OpenFace, for edge server offloading.  Busybox is a stripped-down Unix tools in a single executable file, which results in a tiny file system inside the container. OpenFace\cite{openface2016} is an application that dispatches images from mobile device to the edge server, then executes the face recognition algorithm on server, and finally sends back a text string of the name of the person to the mobile device. The container has a huge file system, which is approximate to $2$ gigabytes.
 
 Table~\ref{table_samehost} indicates the migration could be done within 10 seconds for Busybox and with 30 seconds for OpenFace. The two nodes are two virtual machines on the same physical host. The network between two virtual hosts has a 1Gbps bandwidth with latency of 0.5 milliseconds which transfers 2.17 GB data within a short time.
 
