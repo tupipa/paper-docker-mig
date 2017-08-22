@@ -102,7 +102,7 @@
 % \draw[->] (cloudco) -- (90:2);
 % 
 % Server OS Node A
-\node [name=srvosA, srvos,draw] at (serverAco) {OS(Linux)};
+\node [name=srvosA, srvos,draw] at (serverAco) {VM (Linux)};
 % Docker Node
 \node [name=dockerA,dockerNode] at ([yshift=0.9em]srvosA.north) {Docker Daemon};
 % ConNode
@@ -117,7 +117,7 @@
 
 
 % Server OS Node B
-\node [name=srvosB, srvos,draw] at (serverBco) {OS(Linux)};
+\node [name=srvosB, srvos,draw] at (serverBco) {VM (Linux)};
 % Docker Node
 \node [name=dockerB, dockerNode] at ([yshift=0.9em]srvosB.north) {Docker Daemon};
 % AUFS
@@ -211,6 +211,9 @@ node[black, left ,text width=3cm, align=center, yshift=0.5em
 \\
 \ref{img-sync}.
 Get Memory Difference
+\\
+\ref{cleanup}.
+Clean Up
 } 
 ([xshift=-0.5em]conA.south);
 
@@ -221,7 +224,7 @@ Get Memory Difference
 node[right, black]{
 \ref{request}. Migration Request
 }
-([xshift=2em]srvosA.south);
+([xshift=2em, yshift=-0.5em]srvosA.south);
 
 
 

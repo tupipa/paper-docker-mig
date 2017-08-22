@@ -1,7 +1,7 @@
-We propose a framework that enables service handoff across edge offloading servers, which leverages the layered storage system of Docker container platform to improve the migration performance.
-Our system helps the edge computing platform to continuously provide offloading services with low end-to-end latency while maintaining the high mobility of clients. 
-By leveraging the layered file system of Docker container, we eliminate unnecessary transfers of a significant portion of the file system for the application. 
-By transferring the base memory image ahead of the handoff and transferring only the incremental memory difference when migration starts, we further reduce the total transfer size. Finally, our system shows that the hand-off time is reduced by $56\%\sim 80\%$ compared to the state-of-the-art VM handoff for the edge computing platform.
+We propose a framework that enhances service handoff across edge offloading servers by leveraging the layered storage system of Docker containers to improve migration performance.
+Our system helps the edge computing platform to continuously provide offloading services with low end-to-end latency while supporting high client mobility. 
+By leveraging the layered file system of Docker containers, we eliminate unnecessary transfers of a redundant and significant portion of the application file system. 
+By transferring the base memory image ahead of the handoff, and transferring only the incremental memory difference when migration starts, we further reduce total transfer size. Finally, our system shows that the hand-off time is reduced by $56\%\sim 80\%$ compared to the state-of-the-art VM handoff for the edge computing platform.
 
 % But currently, our system only supports an older version of Docker. In the future, we need to adapt the system to the newest Docker platform. 
 

@@ -33,7 +33,9 @@ label={[label distance=0.3cm]-180:R/W}]
 };
 \end{tikzpicture}
     \caption{OpenFace Container's Image Layer Stack. Container's  ID is \textit{
-    9ec79a095ef4db1fc5edc5e4059f5a10}. It's rootfs ID is stored it's meta data file \textit{state.json}. The stack list is stored in file \textit{./aufs/layers/febfb1642ebeb2585-7bf2a9c558bf695}. On the top is the \textit{container layer}, the only writable storage layer for this container.}
+    9ec79a095ef4db1fc5edc5e4059f5a10}. 
+    % It's rootfs ID is stored it's meta data file \textit{state.json}. 
+    The stack list is stored in file \textit{./aufs/layers/febfb1642ebeb25857bf2a9c- 558bf695}. On the top is the writable (R/W) layer -- \textit{container layer}, and all the readonly (RO) layers are called \textit{base image layers}.}
     \label{fig:stacklist}
 \end{figure}
 

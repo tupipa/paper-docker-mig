@@ -1,23 +1,24 @@
 
-In this section, we evaluate the performance of the system from different workloads under different network conditions. 
-Specifically, we evaluate the offloading our service handoff system by showing in what extent the total hand-off time and total transferred size are reduced.
+In this section, we evaluate the performance of our system under different workloads and different network conditions. 
+Specifically, we evaluate offloading with our service handoff system by measuring the degree to which total hand-off time and total transferred size are reduced.
 
 \subsection{Set-Up and Benchmark Workloads}
 
-The desktop server is equipped with Intel Core i3-6100 Processor (3.70GHz, 2 cores, 4 threads) and 16GB DDR4 memory. Two virtual machines are running with 2 vcpus and 4GB memory each.
+Our test bed is built on a desktop server, which is equipped with Intel Core i3-6100 Processor (3.70GHz, 2 cores, 4 threads), and 16GB DDR4 memory. Two virtual machines are running with 2 vcpus and 4GB memory each.
 % The laptop is with Intel$^{R}$ Core$^{TM}$ Duo T6570 (2.2GHz, 2 cores) and 2GB DDR2 memory. Both the machines and virtual machines are running Ubuntu 16.04 LTS as the operating system.
-The laptop is with Intel Core i5-2450M CPU (2.5GHz, 2 cores, 4 threads) and 4GB DDR3 memory. Both the machines and virtual machines are running Ubuntu 16.04 LTS as the operating system. Docker version is 1.10-dev which is built with experimental feature enabled.
+A laptop acts as a client, this has Intel Core i5-2450M CPU (2.5GHz, 2 cores, 4 threads) and 4GB DDR3 memory. 
+The hosts and virtual machines are running Ubuntu 16.04 LTS as the operating system. Docker version is 1.10-dev which is built with experimental feature enabled.
 
 In our experiment, we set up migration scenarios using 
-emulated bandwidth on two virtual machines each runs a Docker instance.
+emulated bandwidth on two virtual machines each running a Docker instance.
 Docker containers are migrated from the Docker host on source VM to the Docker host on another VM. 
 Two virtual machines run on the same physical server. 
 
-We use Linux Traffic Control (tc\cite{tc} )  tool to control network traffic. In order to test our system under WANs , we set up the emulated low bandwidth ranged from 5Mbps to 45Mbps. According to the average bandwidth observed on the Internet\cite{internet2014state}, we set  latency a fixed 50ms to emulate the WAN network environment for edge computing.
+We use Linux Traffic Control (tc\cite{tc} )  tool to control network traffic. In order to test our system under WANs , we emulated low bandwidth ranging from 5Mbps to 45Mbps. According to the average bandwidth observed on the Internet\cite{internet2014state}, we set  latency at a fixed 50ms to emulate the WAN environment for edge computing.
 
-Since edge computing environment can be also adapted to a relatively large LAN network such as a university's LAN network, or LANs for other large communities, it usually can reach higher bandwidth as well as lower latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN network.
+Since edge computing environments can also be adapted to a relatively large LAN network such as a university, or other large community, it usually can reach higher bandwidth as well as lower latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN.
 
-For the offloading workloads, we use busybox as a simple workload to show the functionality of the system as well as the non-avoidable system overhead when processing the container's migration. In order to show the realtime performance of offloading service handoff, we choose OpenFace as a sample workloads.
+For the offloading workloads, we use Busybox as a simple workload to show the functionality of the system as well as the non-avoidable system overhead when processing container migration. In order to show the realtime performance of offloading service handoff, we chose OpenFace to provides a sample workload.
 
 % \subsubsection{Busybox}
 
@@ -36,7 +37,7 @@ For the offloading workloads, we use busybox as a simple workload to show the fu
 Figure \ref{fig:facediff}
 and  \ref{fig:busydiff} 
 give an overview of the dump memory image sizes while running the container of OpenFace and Busybox. 
-The data is collected from 11 dumps of the running container of Busybox and OpenFace, labeled from dump 0 to 10. Memory is dumped every 10 seconds. Container continues to run during the first 10 dumps, and stops after 11th dump. From the figure we can see the memory difference is much smaller than the original dumped memory. So the migration could be speed up by only  transferring the memory difference. 
+The data is collected from 11 dumps of the running container of Busybox and OpenFace, labeled from dump 0 to 10. Memory is dumped every 10 seconds. Container continues to run during the first 10 dumps, and stops after 11th dump. From the figure we can see the memory difference is much smaller than the original memory dump. The migration could be sped up by only  transferring the memory difference. 
 
 Furthermore, 
 Figure  
@@ -47,20 +48,20 @@ and
 \ref{fig:facediff-ori} $\sim$
 % \ref{fig:facediffdiff-ori} 
 \ref{fig:facediff-adj} 
-show us the sizes of memory difference between adjacent dumps as well as each dump with the original dump. We find a feature of memory access patterns for Busybox and OpenFace application. Although their memory are continuously changing, the changes will resides in a certain amount of areas: a 4KB area for Busybox and 25MB area for OpenFace. 
-In this case, iterative transferring the memory difference to the target server will be waste of efforts. Although this will not happen on every different applications, it is valuable to be considered as a special case for further researches which will live migrate the containers by iterative transferring. One way to utilize those kinds of memory access pattern is just not iterative transfer every memory difference, instead, just transfer the last iterative difference would result in the same.
+show us the sizes of memory differences between adjacent dumps as well as the original dump. We find a feature of memory access patterns for Busybox and OpenFace application. Although their memory is continuously changing, the changes reside in a specified area: a 4KB area for Busybox and 25MB area for OpenFace. 
+In this case, iterative transferring of memory difference to the target server will be waste of effort. Although this will not happen on every application, it is valuable to be considered as a special case for further research regarding live migration of containers by iterative transfer. One way to utilize those kinds of memory access patterns is by not iteratively transferring every memory difference. Instead, transfer only the last iterative difference to achieve the same end result.
 
 \subsection{Evaluation of Pipeline Performance}
 
 \input{figure/evaluations/figure-pipes.tex}
 In order to verify the effectiveness of pipelined processing, we implemented the pipeline processing of two time consuming steps: \textit{imgDiff} and \textit{imgSend}, where \textit{imgDiff} is to get memory difference and \textit{imgSend} is to send memory difference to the target during migration. 
-Figure \ref{fig:facepipe} and Figure \ref{fig:busypipe} reports the timing benefits we could achieve by using pipelined processing. From the figure, we can see without pipelined processing, getting memory difference and sending the memory difference are two major steps that accounts for the migration time. After apply the pipelined processing, we could save $5\sim 8$ seconds for OpenFace migration. Busybox also saves a certain amount of time by pipelined processing.
+Figure \ref{fig:facepipe} and Figure \ref{fig:busypipe} reports the timing benefits we could achieve by using pipelined processing. From the figure, we can see that, without pipelined processing, most time costs are by getting and sending the memory difference. After applying pipelined processing, we could save $5\sim 8$ seconds for OpenFace migration. Busybox also saves a certain amount of time with pipelined processing.
 
 
 \subsection{Overall Performance and Comparison with State-of-the-Art}
 We evaluate the total \textit{handoff time} and \textit{transferred size } during offloading service handoff under different bandwidths and network latencies. 
 
-Table \ref{tab:all} shows an overview of the performance of our system under different network bandwidth.
+Table \ref{tab:all} shows an overview of the performance of our system under different network bandwidth conditions.
 % \input{figure/eva-individual/face-busy-all-bands.tex}
 % Figure \ref{fig:allband}.
 % Figure \ref{fig:allband-busy} 
@@ -70,22 +71,22 @@ Table \ref{tab:all} shows an overview of the performance of our system under dif
 \input{figure/evaluations/table-optimized.tex}
 
 \textit{Handoff time}
-is from the time the source host receives migration request until the offloading container is successfully restored on the target host. The \textit{Down time} is the time from the container is checkpointed to the container is restored on the target. Those two time are very similar since we immediately checkpoint and stop the container once we get the migration request. 
+is from the time the source host receives a migration request until the offloading container is successfully restored on the target host. The \textit{Down time} is from the time when the container is stopped on the source server to the time when the container is restored on the target server. \textit{Handoff time} and \textit{Down time} are very similar since we immediately checkpoint and stop the container once we get the migration request. 
 
 \textit{Pre-Transfer Size} is the transferred size before \textit{handoff} starts, i.e. from stage \ref{prepare} until stage \ref{request} . \textit{Final-Transfer Size} is the transferred size during the handoff, i.e. from stage \ref{request} until the end of final stage \ref{restore}.
 
 \input{figure/evaluations/figure-latency.tex}
 Figure \ref{fig:busylatency}
 and
-Figure \ref{fig:facelatency} shows the performance under difference netowrk latencies of $50ms$ and $6ms$ for Busybox and OpenFace.  It shows a tiny difference when facing different latencies. This means our system is suitable for a wide range of network latencies.
+Figure \ref{fig:facelatency} shows the performance under difference network latencies of $50ms$ and $6ms$ for Busybox and OpenFace.  It shows a tiny difference when facing different latencies. This means our system is suitable for a wide range of network latencies.
 
 
-From Table \ref{tab:all} and Figure \ref{fig:busylatency} , we can see the simple Busybox container can be migrated very quickly regardless the network bandwidth and network latency. 
+From Table \ref{tab:all} and Figure \ref{fig:busylatency} , we can see the simple Busybox container can be migrated very quickly regardless the network bandwidth and latency. 
 
-From Table \ref{tab:all} and Figure \ref{fig:facelatency} , we can see the Openface offloading container can be migrated within $49$ seconds under the lowest bandwidth with $50$ ms latency. Compared to the work in \cite{ha2015vmhandoff}, which has a handoff time of $247$ seconds under the same network condition. For $25$Mbps and $50$ ms latency, our system acheives $17.4$ seconds while  \cite{ha2015vmhandoff}  needs $39$ seconds. The relative standard deviations in Table \ref{tab:all} shows the good robustness of our experiment result.
+From Table \ref{tab:all} and Figure \ref{fig:facelatency} , we can see the OpenFace offloading container can be migrated within $49$ seconds under the lowest bandwidth $5$Mbps with $50$ ms latency. Compared to the work in \cite{ha2015vmhandoff}, which has a handoff time of $247$ seconds under the same network conditions. For $25$Mbps and $50$ ms latency, our system achieves $17.4$ seconds while  \cite{ha2015vmhandoff}  needs $39$ seconds. The relative standard deviations in Table \ref{tab:all} shows the robustness of our experimental result.
 
 
-Therefore, our system could reduce the totoal handoff time by $56\%\sim 80\%$ compared to the state-of-the-art work of VM handoff \cite{ha2015vmhandoff} on edge computing platform. 
+Therefore, our system could reduce the total handoff time by $56\%\sim 80\%$ compared to the state-of-the-art work of VM handoff \cite{ha2015vmhandoff} on edge computing platforms. 
 
 
 
