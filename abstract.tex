@@ -1,24 +1,14 @@
 
 Supporting the smooth movement of mobile clients is vitally important when offloading services on the edge computing platform. Interruption-free client mobility demands seamless migration of the offloading service to nearby edge servers.
-% in order to keep such promise
-% .
-% 
 However, fast migration of offloading services across edge servers in a WAN environment poses significant challenges to the handoff service design. 
-%
-%
-%
 In this paper, we present a novel service handoff system which seamlessly migrates offloading services to the nearest edge server, while the mobile client is moving. 
-% Offloading services are running inside Docker containers. 
 Service handoff is achieved via container migration. 
-% 
 We identify an important performance problem during Docker container migration.
-% We analyze storage management of Docker containers based with AUFS storage driver .
-%
 Based on our systematic study of container layer management and image stacking,
 we propose a migration method which leverages the layered storage system to reduce file system synchronization overhead, without dependence on the distributed file system. 
 We implement a prototype system and conduct experiments using real world product applications.
 Evaluation results reveal that compared to state-of-the-art service handoff systems designed for edge computing platforms, our system reduces the total duration of service handoff time by 
-$80\%$($56\%$) with network bandwidth 5Mbps(20Mbps).
+$80\%$($56\%$) with network bandwidth $5$Mbps($20$Mbps).
 
 
 

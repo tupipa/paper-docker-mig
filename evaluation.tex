@@ -16,7 +16,7 @@ Two virtual machines run on the same physical server.
 
 We use Linux Traffic Control (tc\cite{tc} )  tool to control network traffic. In order to test our system under WANs , we emulated low bandwidth ranging from 5Mbps to 45Mbps. According to the average bandwidth observed on the Internet\cite{internet2014state}, we set  latency at a fixed 50ms to emulate the WAN environment for edge computing.
 
-Since edge computing environments can also be adapted to an LAN network such as a university, smart homes, or other community, it usually can reach higher bandwidth as well as lower latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN.
+Since edge computing environments can also be adapted to the LAN network such as a university, smart homes, or other community, it usually can reach higher bandwidth as well as lower latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN.
 
 For the offloading workloads, we use Busybox as a simple workload to show the functionality of the system as well as the non-avoidable system overhead when processing container migration. In order to show the performance of offloading service handoff regarding real world applications, we chose OpenFace to provides a sample workload.
 
