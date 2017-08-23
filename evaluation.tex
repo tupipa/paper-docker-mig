@@ -16,9 +16,9 @@ Two virtual machines run on the same physical server.
 
 We use Linux Traffic Control (tc\cite{tc} )  tool to control network traffic. In order to test our system under WANs , we emulated low bandwidth ranging from 5Mbps to 45Mbps. According to the average bandwidth observed on the Internet\cite{internet2014state}, we set  latency at a fixed 50ms to emulate the WAN environment for edge computing.
 
-Since edge computing environments can also be adapted to a relatively large LAN network such as a university, or other large community, it usually can reach higher bandwidth as well as lower latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN.
+Since edge computing environments can also be adapted to an LAN network such as a university, smart homes, or other community, it usually can reach higher bandwidth as well as lower latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN.
 
-For the offloading workloads, we use Busybox as a simple workload to show the functionality of the system as well as the non-avoidable system overhead when processing container migration. In order to show the realtime performance of offloading service handoff, we chose OpenFace to provides a sample workload.
+For the offloading workloads, we use Busybox as a simple workload to show the functionality of the system as well as the non-avoidable system overhead when processing container migration. In order to show the performance of offloading service handoff regarding real world applications, we chose OpenFace to provides a sample workload.
 
 % \subsubsection{Busybox}
 
@@ -34,10 +34,10 @@ For the offloading workloads, we use Busybox as a simple workload to show the fu
 
 \input{figure/dumps/diff_size.tex}
 
+\ref{fig:busydiff}  and 
 Figure \ref{fig:facediff}
-and  \ref{fig:busydiff} 
-give an overview of the dump memory image sizes while running the container of OpenFace and Busybox. 
-The data is collected from 11 dumps of the running container of Busybox and OpenFace, labeled from dump 0 to 10. Memory is dumped every 10 seconds. Container continues to run during the first 10 dumps, and stops after 11th dump. From the figure we can see the memory difference is much smaller than the original memory dump. The migration could be sped up by only  transferring the memory difference. 
+give an overview of the dump memory image sizes while running the container of Busybox and  OpenFace. 
+The data is collected from 11 dumps of the running container of Busybox and OpenFace, labeled from dump 0 to 10. Memory is dumped every 10 seconds. Container continues to run during the first 10 dumps, and stops after 11th dump. From the figure we can see the memory difference (or dirty memory) is much smaller than the original memory dump. The migration could be sped up by only  transferring the memory difference. 
 
 Furthermore, 
 Figure  
@@ -49,13 +49,13 @@ and
 % \ref{fig:facediffdiff-ori} 
 \ref{fig:facediff-adj} 
 show us the sizes of memory differences between adjacent dumps as well as the original dump. We find a feature of memory access patterns for Busybox and OpenFace application. Although their memory is continuously changing, the changes reside in a specified area: a 4KB area for Busybox and 25MB area for OpenFace. 
-In this case, iterative transferring of memory difference to the target server will be waste of effort. Although this will not happen on every application, it is valuable to be considered as a special case for further research regarding live migration of containers by iterative transfer. One way to utilize those kinds of memory access patterns is by not iteratively transferring every memory difference. Instead, transfer only the last iterative difference to achieve the same end result.
+In this case, iterative transferring of memory difference to the target server will be waste of effort. Although this will not happen on every application, it is valuable to be considered as a special case for further research regarding the migration of containers by iterative transfer. One way to utilize those kinds of memory access patterns is by not iteratively transferring every memory difference. Instead, transfer only the last iterative difference to achieve the same end result.
 
 \subsection{Evaluation of Pipeline Performance}
 
 \input{figure/evaluations/figure-pipes.tex}
 In order to verify the effectiveness of pipelined processing, we implemented the pipeline processing of two time consuming steps: \textit{imgDiff} and \textit{imgSend}, where \textit{imgDiff} is to get memory difference and \textit{imgSend} is to send memory difference to the target during migration. 
-Figure \ref{fig:facepipe} and Figure \ref{fig:busypipe} reports the timing benefits we could achieve by using pipelined processing. From the figure, we can see that, without pipelined processing, most time costs are by getting and sending the memory difference. After applying pipelined processing, we could save $5\sim 8$ seconds for OpenFace migration. Busybox also saves a certain amount of time with pipelined processing.
+Figure \ref{fig:busypipe} and Figure \ref{fig:facepipe} reports the timing benefits we could achieve by using pipelined processing. From the figure, we can see that, without pipelined processing, most time costs are by getting and sending the memory difference. After applying pipelined processing, we could save $5\sim 8$ seconds for OpenFace migration. Busybox also saves a certain amount of time with pipelined processing.
 
 
 \subsection{Overall Performance and Comparison with State-of-the-Art}

@@ -21,7 +21,7 @@ This behavior would cause severe problems from several aspects:
 \begin{enumerate}[series = tobecont]
     \item It will corrupt the layered file system inside the container after restoration  on the target server. The tools just transfer the whole file system into one directory on the destination server and mount it as root directory for the container. After restoration on the target host, the container no longer maintains its layered image stacks as on the source node. 
     \item It substantially reduces the efficiency and robustness of migration.
-    It will synchronize the whole file system of the Docker container using Linux \textit{rsync} command while the container is still running. First, the run \textit{rsync} command on a whole file system would be pretty slow due to the large amount of files.  Second, this can result in file contention when the running container and \textit{rsync} on the source node attempt to access the same files. Contention will cause synchronization error which can result in migration error or failure. 
+    It will synchronize the whole file system of the Docker container using Linux \textit{rsync} command while the container is still running. First, running \textit{rsync} command on a whole file system would be pretty slow due to the large amount of files.  Second, this can result in file contention when the container process and \textit{rsync} process on the source node attempt to access a same file. Contention will cause synchronization error which can result in migration error or failure. 
 \end{enumerate}
 
 To verify our claim, we have tested this tool with experiments to migrate containers through different network connections. Our experiments use one simple container, Busybox, and an application, OpenFace, for edge server offloading.  Busybox is a stripped-down Unix tool in a single executable file. This results in a tiny file system inside the container. OpenFace\cite{openface2016} is an application that dispatches images from mobile devices to the edge server, then executes the facial recognition algorithm on server, and finally sends back a text string with the name of the person. The container has a huge file system, approximately $2$ gigabytes.
@@ -30,7 +30,7 @@ Table~\ref{table_samehost} indicates migration could be done within 10 seconds f
 
 Due to the dominance of wireless connections in edge computing networks, we further test their containers migrating  between two physical hosts. We used the same wireless LAN network with bandwidth of 15Mbps and latency of 4ms. Table~\ref{table_wireless} shows that the migration of the Busybox container takes 133.11 seconds with transferred size as small as 152 kilobytes. As for migration of OpenFace, it needs to transfer more than 2 Gigabytes data and  costs about 3200 seconds. 
 
-As we have stated, this poor performance is caused by transferring  the whole file system including all the stacked image layers of the container. This is even worse than a mature VM migration. Migration of VMs could avoid transferring the complete file system by sharing the base VM images
+As we have stated, this poor performance is caused by transferring  the whole file system including all the stacked image layers of the container. This is even worse than a mature VM migration. Migration of VMs could avoid transferring a portion of the file system by sharing the base VM images
     \cite{ha2015vmhandoff}, which will finish the migration within several minutes. 
 
 % This behavior would cause severe problems from several aspects:

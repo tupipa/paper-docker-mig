@@ -26,9 +26,9 @@ Figure~\ref{fig:migstages} shows the design details of this architecture as well
 \begin{enumerate}[label=\textbf{S\arabic*}]
 
 \item \label{prepare} \textbf{% Pre-download Application Image.
-Synchronize Base Image Layers} Upon container start, and offering of offloading service to the client. We also dynamically predict the possible target edge servers that are nearest to the client. Then we request those target servers to start synchronizing the base image layers for that container. 
+Synchronize Base Image Layers} Once the container is created, it starts to offer offloading service to the client. We dynamically predict the possible target edge servers that are nearest to the client. Then we request those target servers to start synchronizing the base image layers for that container. 
 
-\item \label{predump} \textbf{Pre-dump Container.} Before we received the migration request, we will try to dump a snapshot of the container runtime memory and send to the possible target edge servers identified in the previous stage \ref{prepare}. The container is still running during this stage. %TODO clearify the time of this event.
+\item \label{predump} \textbf{Pre-dump Container.} Before we received the migration request, we will try to dump a snapshot of the container runtime memory and send to the possible target edge servers predicted in the previous stage \ref{prepare}. The container is still running during this stage. %TODO clearify the time of this event.
 
 \item \label{request}\textbf{Migration Request Received on Source Server}. Once the migration request is initiated, the request will be sent to the source server, which we regard as the start point of the service handoff.
 % \item \label{prepare} \textbf{Remapping Layer Cache IDs.} Upon receiving the hand-off request to a certain target server, prepare for file system synchronization by remapping the image layers' local identifications on the target server.
@@ -45,7 +45,7 @@ From this point the container will stop running on the source server and wait to
 \item \label{img-sync} \textbf{Get, Send, and Apply Memory Difference.} After we get checkpointed images from the final dump of the container, we then compare this final dump memory to the pre-dumped memory in stage \ref{predump}. We then could get the memory differences and send only these differences to the target server. 
 % \item \label{finalsync} Synchronize the file system for the last time, updating only the changed files of the container layer before last synchronization in \ref{firstsync}.
 
-\item \label{restore} \textbf{Restore Container.} After all transfer finish, we restore the container on the target host with all runtime status retrieved. At the same time, the system will go to stage \ref{prepare} to prepare the next iteration of service handoff in the future. Now the migration has finished and the user starts to be served from the target edge server.
+\item \label{restore} \textbf{Restore Container.} After all transfer finish, we restore the container on the target host with all runtime status retrieved. At the same time, the target host will go to stage \ref{prepare} to prepare the next iteration of service handoff in the future. Now the migration has finished and the user starts to be served from the target edge server.
 
 \item \label{clean} \textbf{Clean Up Source Node.} Finally, on the source node, we need to clean up the footprints of the offloading service. To do this, we just simply remove the container, then all its related runtime footprints will be gone. We might need to carefully choose the right time to clean up, in case the user moves back sometime in the future. If this is the case, it will be better if we keep the old footprints extant to avoid some transmission overhead. 
 
@@ -71,7 +71,7 @@ There are two kinds of base image layers. First, in most cases, the base image l
 
 For these two kinds of base images, we employ different synchronization strategies. More specifically, we download the common image layers between two Docker hosts from the centralized image registry and transfer only the different image layers between two Docker hosts.
 
-By downloading the common image layer from the registry, we reduce the traffic between two edge servers. Furthermore, given that the download could start as soon as the container is created on the source server, the download time could be considered ahead of migration start and therefore amortized .
+By downloading the common image layer from the registry, we reduce the traffic between two edge servers. Furthermore, given that the download could start as soon as the container is created on the source server, the download time could be considered ahead of migration start and therefore amortized.
 
 Finally, for the base image layers created locally by the container, we transfer each such image layer as the image layer is created, regardless if the migration has started or not. 
 
@@ -81,7 +81,7 @@ As discussed in section \ref{intro:idMatching} and \ref{intro:aufs:layerIDMappin
 
 In order to do this, we first remap the cache IDs to the original IDs and compare the original IDs on two different Docker hosts. If the two image layers on two hosts share the same original IDs, we infer that they are exactly the same image layers. 
 
-Then, for the matched original layer IDs on both Docker hosts, we remap the original IDs to the local cache IDs on the target host. Now we have the new cache IDs on the target Docker host. Then we replace the old cache IDs on the source Docker host with the new cache IDs on the target Docker host. 
+Then, for the matched original layer IDs on both Docker hosts, we remap the original IDs to the local cache IDs on the target host. Now we have the new cache IDs on the target Docker host. Then we update the migrated container with the new cache IDs on the target Docker host. 
 
 By doing so, the common image layers on the migrated container will be reset with the new cache IDs that are addressable to the Docker host on the target server. When we restore the container in the future, the file system will be mounted correctly from the shared image layers on the target server.
 
@@ -101,7 +101,7 @@ By doing so, the common image layers on the migrated container will be reset wit
 
 \subsection{Pre-Dump \& Dirty Memory Synchronization} \label{design:memDiff}
 
-In order to reduce the total memory image size during hand-off, we checkpoint the container and dump a snapshot of container memory in stage \ref{predump}. This could happen as soon as the container is created, or as required, we could dump the memory when the most frequently used binary programs in the application are loaded into the memory. This snapshot of memory will be served as the base memory image for the next migration.
+In order to reduce the total memory image size during hand-off, we checkpoint the container and dump a snapshot of container memory in stage \ref{predump}. This could happen as soon as the container is created, or as required, we could dump the memory when the most frequently used binary programs in the application are loaded into the memory. This snapshot of memory will be served as the base memory image for the migration.
 
 After the base memory image is dumped, it is transferred immediately to the server. We assume that the transfer will be finished before the hand-off starts, which is reasonable since we can send the base memory image as soon as the container starts. 
 % Also, the application's Docker images on the near edge servers are also started to download after the container starts and before the hand-off starts, 
@@ -115,7 +115,7 @@ In this way, we only need to transfer the difference of the dump memory to the t
 
 % During migration, the files need to be transferred includes both text files as well as binary files. 
 During container migration, we mainly have 4 types of data needing to be transferred:
-the layer stacks information, the file system of thin writable \textit{container layer}, the meta data files of the container, and the snapshot of container memory and image difference. Some of the data is in the form of string messages, such as layer stack information. Some data are in plain text files, such as most contents and configuration files. Memory snapshots and image differences are all binary image files. According to the feature of the files, we design different strategies to transfer the data.
+the layer stacks information, the file system of thin writable \textit{container layer}, the meta data files of the container, and the snapshot of container memory and memory difference. Some of the data is in the form of string messages, such as layer stack information. Some data are in plain text files, such as most contents and configuration files. Memory snapshots and memory differences are all binary image files. According to the feature of the files, we design different strategies to transfer the data.
 
 The layer stacks information is sent via UNIX RPC API implementation in \cite{phaul}. This is based on a socket connection created by python scripts. This information consists of a list of SHA256 ID strings, so its quite efficiently sent as a socket message. It does not merit applying compression because the overhead of compression outweighs the benefits for those short strings.
 
@@ -142,7 +142,7 @@ With the help of parallel and pipelined processing,  we could further improve th
 
 % From stage \ref{prepare} to stage \ref{restore}, there are lots of tasks that could be run in parallel between the source and target servers.
 
-First, starting a container will trigger two events to run in parallel: a) downloading  images from registry in the cloud, and b) pre-dumping/sending base memory images to the potential target edge servers near the source node. Those two processes could be run at the same time in order to reduce the total time of stage \ref{prepare} and \ref{predump}. 
+First, starting a container will trigger two events to run in parallel: a) on the potential target servers near the source node, downloading  images from centralized registry, and b) on the source node, pre-dumping/sending base memory images to the potential target servers. Those two processes could be run at the same time in order to reduce the total time of stage \ref{prepare} and \ref{predump}. 
 %When the target servers are downloading images from Registry,  source server will checkpoint  and send the running container's base memory images to the possible target server.
 
 Second, daemon reload in stage \ref{daemon-Reload} is required on the target host, it could be triggered immediately after \ref{fs-sync}. It could be paralleled with stage \ref{img-sync}, when the source server is sending the memory difference to the target host. Stage \ref{fs-sync} cannot be paralleled with \ref{daemon-Reload}, because daemon reload on the target host requires the configuration data files sent in stage \ref{fs-sync}.
@@ -156,9 +156,9 @@ Lastly, in stage \ref{img-sync}, after we get the final memory snapshot, we will
 
 \subsection{Security Isolation}
 
-Finally, it's critical to minimize security risks to the offloading services running on the edge servers. Isolation between different services could provide a certain level of security. Our framework provides an isolated running environment for the offloading service via two layers of the system virtualization hierarchy. Different services can be isolated by running inside different \textit{Linux Containers}, and different containers are allowed to be further isolated by running in different  \textit{Virtual Machines}. 
+Finally, it's critical to minimize security risks to the offloading services running on the edge servers. Isolation between different services could provide a certain level of security. Our framework provides an isolated running environment for the offloading service via two layers of the system virtualization hierarchy. Different services can be isolated by running inside different \textit{Linux containers}, and different containers are allowed to be further isolated by running in different  \textit{virtual machines}. 
 
-More thorough security solutions need to be designed before this framework can be deployed to the real world. These solutions include efficient run-time monitoring, secure system updating, etc.. But here we focus on the mobility of services from the performance side, and leave most security work to the future.
+More thorough security solutions need to be designed before this framework can be deployed to the real world. These solutions include, but are not limited to efficient run-time monitoring, secure system updating, etc.. But here we focus on the mobility of services from the performance side, and leave most security work to the future.
 
 
 

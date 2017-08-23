@@ -37,7 +37,7 @@ Therefore, effective edge offloading needs to support mobile services and users.
 In the centralized cloud infrastructure, mobility of clients can be well supported since the client is supposed to connect to the centralized cloud server through the long latency WAN internet. However, in the edge computing infrastructure, mobile devices connect to nearby edge servers to benefit from high bandwidth and low latency connections. Therefore, when the mobile device moves farther away from its edge server, it might suffer from higher latency, or even become out of service. 
 
 In order to be continuously served by a nearby edge server, the offloading computation should be moved to a new nearby edge server from the previous server. We regard this process as a \textit{service  handoff} from the current edge server to a nearer edge server. 
-This is analagous to the \textit{seamless handoff} or \textit{handover}  mechanism in cellular networks, wherein the moving client connects to the nearest available base station, maintaining connectivity to the Internet with minimal interruption. 
+This is analagous to the \textit{seamless handoff} or \textit{handover}  mechanism in cellular networks, wherein the moving client connects to the nearest available base station, maintaining connectivity to the cellular network with minimal interruption. 
 %
 Therefore, one of the primary requirements for edge computing is to enable  \textit{service handoff} across edge servers, so that a mobile client is always served by nearby edge servers with high bandwidth and low latency.
 
@@ -52,11 +52,12 @@ In the edge infrastructure, mobile devices use edge servers to offload resource-
 When offloading services handoff from one edge server to another, just rebuilding the connection is certainly not enough. Instead, we need to transfer all the runtime states of offloaded workloads from the current edge server to the nearer edge server.  
 
 One possible solution is 
-to use live migration\cite{vmlivemig} 
-to migrate a virtual machine from one edge server to another in order to seamlessly transfer the offloading workloads. However, this approach has already been shown to be not suitable for edge computing environments in  \cite{ha2015vmhandoff}. First, live migration and service handoff are optimized according to different performance metrics. While live migration aims to reduce \textit{downtime} of the virtual machine, service handoff aims to reduce the \textit{total time} from the time when handoff request is issued to the completion time of the migration. This is well discussed in \cite{ha2015vmhandoff}.
+to use virtual machine (VM) live migration\cite{vmlivemig} 
+to migrate a VM from one edge server to another in order to seamlessly transfer the offloading workloads. However, this approach has already been shown to be not suitable for edge computing environments in  \cite{ha2015vmhandoff}. 
+First, live migration and service handoff are optimized according to different performance metrics. While live migration aims to reduce \textit{downtime} of the VM, service handoff aims to reduce the \textit{total time} from the time when handoff request is issued to the completion time of the migration. This is well discussed in \cite{ha2015vmhandoff}.
 Second, live migration is originally designed for high performance data centers with high bandwidth networks. However, this is not possible for edge servers which are deployed over the WAN. Furthermore, live migration relies on network-based storage sharing so only run-time memory state is transferred and not storage data. Apparently, network-based storage sharing across the edge computing infrastructure is not feasible due to its widely distributed nature and low WAN bandwidth between edge servers. 
 
-In order to enable handoff across edge computing servers, much research has focused on virtual machine migration ~\cite{satya2009case,ha2015vmhandoff}. 
+In order to enable handoff across edge computing servers, much research has focused on VM migration ~\cite{satya2009case,ha2015vmhandoff}. 
 However, the total handoff time was still several minutes on a WAN network. For example, it was shown it requires $245.5$ seconds to migrate a running OpenFace instance under 5Mbps bandwidth (50ms latency) network in \cite{ha2015vmhandoff}. 
 
 One of the reasons for the long latency of handoff is the large transfer size during the VM migration. Although VM synthesis could reduce the image size by splitting images into multiple layers, and only transferring the application-specific layer, the total transferred size is still in the magnitude of tens, or even hundreds of megabytes. 
@@ -78,5 +79,5 @@ During the migration, we only need to transfer the run-time memory states and th
 
 Apparently, the migration of Docker containers allows smaller transfer sizes than the virtual machine based approaches we introduced above. The layered storage in Docker infrastructure enables an opportunity for service handoff based on container migration. By reducing the transfer size as much as possible, we can provide a nearly seamless offloading service handoff across the adjacent edge servers on a WAN network.
 
-However, as of this writing, there is no current tool to leverage Docker's layered images to migrate containers efficiently. In this paper, we propose our work to reduce transfer size of migrating containers by leveraging layered storage.
+However, as of this writing, there is no current tool to leverage Docker's layered images to migrate containers efficiently. In this paper, we propose our work to reduce transfer size during container migration by leveraging layered storage.
 % In order to do this, we must fist dive into the images layers underlying containers and avoid the transfer of application images stack. That is just transfer the ``\textit{container layer}''. 

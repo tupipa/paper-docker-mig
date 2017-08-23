@@ -43,20 +43,20 @@ Although creating a container by crafting cgroup and namepaces step by step is p
 runC\cite{runc},
 rkt\cite{rkt}, 
 OpenVZ\cite{openvz}, 
-Docker\cite{docker}, etc. Different container runtime has different scenerios of usage. For example, LXC/LXD only cares about full system containers and doesn't care about what kind of application runs inside the container, while Docker aims to encapsulate a specific application in the container.  
+Docker\cite{docker}, etc.. Different container runtime has different scenerios of usage. For example, LXC/LXD only cares about full system containers and doesn't care about what kind of application runs inside the container, while Docker aims to encapsulate a specific application in the container.  
 
 Migration of containers becomes possible when CRIU (Checkpoint/Restore In Userspace)\cite{criu} supports the checkpoint/restore functionality for Linux. 
 Now CRIU supports the checkpoint and restore of containers for OpenVZ, LXC, and Docker. 
 
 
-Based on CRIU, OpenVZ now supports migration of containers. The implementation can be found from the CRIU community's open source project, P.Haul(process Hauler)\cite{phaul}.  It is claimed that migration could be done within 5 seconds\cite{livmigcon}.
-However, OpenVZ uses a distributed storage system\cite{openvzfs}, where all files are shared across a high bandwidth network. 
+Based on CRIU, OpenVZ now supports migration of containers. The implementation can be found from the CRIU community's open source project, P.Haul ( process Hauler ) \cite{phaul}.  It is claimed that migration could be done within 5 seconds\cite{livmigcon}.
+However, OpenVZ uses a distributed storage system~\cite{openvzfs}, where all files are shared across a high bandwidth network. 
 This means that during container migration, it only needs to migrate the checkpointed memory images and no file transfer needs to be done. 
 However, due to the limited WAN bandwidth for edge servers, it is not possible to deploy distributed storage. Therefore, migration of OpenVZ containers is not suitable for service handoff on edge computing platforms.
 
-For LXC containers, the migration is implemented in Qiu's thesis work \cite{qiu2016evaluating}, which is also based on the CRIU project. However, LXC regards containers as a whole system container, and there is no layered storage for containers. Therefore, during container migration, all of the file system for that container must be migrated together with all memory status. The total transfer size will be comparable with migrating a whole virtual machine(VM). So, this is still not feasible for an edge computing environment. 
+For LXC containers, the migration is implemented in Qiu's thesis work~\cite{qiu2016evaluating}, which is also based on the CRIU project. However, LXC regards containers as a whole system container, and there is no layered storage for containers. Therefore, during container migration, all of the file system for that container must be migrated together with all memory status. The total transfer size will be comparable with migrating a whole virtual machine(VM). So, this is still not feasible for an edge computing environment. 
 
-For Docker containers, there is a sample migration helper in P.Haul's source code, which supports only an older version of docker-1.9.0-dev. It is also extended by Ross Boucher to support docker-1.10-dev. However, as we have discussed in section \ref{migpractice}, we find this implementation transmits the entire file system of that container, regardless of the layered storage of the Docker platform. This makes the migration unsatisfactorily slow across the edges of the WAN. Therefore, in this paper, we dive into the inner technical details of Docker storage and investigate leveraging the layered storage of Docker platform during migration. Finally we avoid the transfer of unnecessary file system data by sharing Docker images between different Docker hosts. 
+For Docker containers, there is a sample migration helper in P.Haul's source code, which supports only an older version of docker-1.9.0-dev. It is also extended by Ross Boucher to support docker-1.10-dev. However, as we have discussed in section \ref{migpractice}, we find this implementation transmits the entire file system of that container, regardless of the layered storage of the Docker platform. This makes the migration unsatisfactorily slow across the edges of the WAN. Therefore, in this paper, we dive into the inner technical details of Docker storage and investigate leveraging the layered storage of Docker platform during migration. Finally we avoid the transfer of unnecessary file system data by sharing container image layers between different Docker hosts. 
 
 %  a lightweight universal runtime container. runC is a low-level container runtime and an implementation of the Open Container Initiative specification. runC exposes and expects a user to understand low-level details of the host operating system and configuration.
 
