@@ -1,7 +1,7 @@
 
 \subsection{Docker Layered Storage Management}\label{aufsIntroduction}
 
-As we mentioned above, Docker use layered storage for its containers. Each Docker image references a list of read-only layers that represent file system differences. Layers are stacked on top of each other to form a base for a container's root filesystem \cite{dockerlayer}. 
+As we mentioned above, Docker uses layered storage for its containers. Each Docker image references a list of read-only layers that represent file system differences. Layers are stacked on top of each other to form a base for a container's root filesystem \cite{dockerlayer}. 
 % \cite{https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#images-and-layers}
 
 \input{figure/figure-layer-stack.tex}
@@ -117,7 +117,9 @@ AUFS manages the content of image layers in the directory of \textit{./aufs/diff
 \smallbreak 
 \subsubsection{Unified Mount Point} 
 ~\smallbreak
-The directory \textit{./aufs/mnt/<rootfs ID>/ }  is the root file system mount point of the container. All the image layers are union mounted to this folder and provide a single file system view for the container. For example, as shown in Figure \ref{fig:aufs}, when a container is created based on a Linux image, its mount point will contain the root directory contents like \textit{/usr/, /home/, /boot/, etc. }. All those directories are mounted from its underlying layered storage, including both the read only image layers downloaded from the registry and the newly created layers for the container. 
+The directory \textit{./aufs/mnt/<rootfs ID>/}  is the mount point of the container's root file system. All image layers are union mounted to this folder and provide a single file system view for the container. 
+For example, as shown in Figure \ref{fig:aufs}, when a container is created based on a Linux image, its mount point will contain the root directory contents like \textit{/usr/, /home/, /boot/, etc. }.
+All those directories are mounted from its underlying layered storage, including both the read only image layers downloaded from the registry and the newly created layers for the container. 
 Since this directory is a mount point for a running container's file system, it will be only available when the container is running. If the container stops running, all the image layers will be unmounted from this mount point. So it will become an empty directory.
 
 Here, the name of the root file system directory, \textit{<rootfs ID>}, is the same as the name of the \textit{container layer} for this container.

@@ -2,12 +2,12 @@
 
 \input{figure/figure-before-after.tex}
 
-In this section, we introduce the design of our service hand-off framework based on Docker container migration. First, we provide a simple usage scenario, give an overview of system architecture and the algorithm of service handoff. Second, in sections \ref{design:syncImage} and \ref{design:idremapping}, we discuss our methodology of storage synchronization based on Docker image layer sharing between two different Docker hosts. Finally, in sections \ref{design:memDiff}, \ref{design:compression}, and \ref{design:pipe}, we show how to further accelerate the migration speed through memory difference transfer, file compression, pipelined and paralleled processing during the migration of Docker containers.
+In this section, we introduce the design of our service hand-off framework based on Docker container migration. First, we provide a simple usage scenario, give an overview of system architecture and the algorithm of service handoff. Second, in sections \ref{design:syncImage} and \ref{design:idremapping}, we discuss our methodology of storage synchronization based on Docker image layer shared between two different Docker hosts. Finally, in sections \ref{design:memDiff}, \ref{design:compression}, and \ref{design:pipe}, we show how to further accelerate the migration speed through memory difference transfer, file compression, pipelined and parallel processing during the migration of Docker containers.
 
 \subsection{System Overview}
 
 Figure~\ref{fig:before-after} shows an exemplar usage scenario of offloading service hand-off based on Docker container migration. 
-In this example (OpenFace\cite{openface2016}), the mobile client achieves real-time facial recognition by offloading workloads to an edge server. 
+In this example (OpenFace\cite{openface2016}), the mobile client achieves real-time face recognition by offloading workloads to an edge server. 
 The mobile client continuously reads images from the camera and sends them to the edge server. 
 The edge server runs the facial recognition application in a container, processes the image via deep neural networks algorithm, and finally sends the recognition result  back to the client. 
 
@@ -26,7 +26,7 @@ Figure~\ref{fig:migstages} shows the design details of this architecture as well
 \begin{enumerate}[label=\textbf{S\arabic*}]
 
 \item \label{prepare} \textbf{% Pre-download Application Image.
-Synchronize Base Image Layers} Once the container is created, it starts to offer offloading service to the client. We dynamically predict the possible target edge servers that are nearest to the client. Then we request those target servers to start synchronizing the base image layers for that container. 
+Synchronize Base Image Layers} Once a container is created, it starts to offer offloading service to the client. We dynamically predict the possible target edge servers that are nearest to the client. Then we request those target servers to start synchronizing the base image layers for that container. 
 
 \item \label{predump} \textbf{Pre-dump Container.} Before we received the migration request, we will try to dump a snapshot of the container runtime memory and send to the possible target edge servers predicted in the previous stage \ref{prepare}. The container is still running during this stage. %TODO clearify the time of this event.
 
@@ -156,7 +156,7 @@ Lastly, in stage \ref{img-sync}, after we get the final memory snapshot, we will
 
 \subsection{Security Isolation}
 
-Finally, it's critical to minimize security risks to the offloading services running on the edge servers. Isolation between different services could provide a certain level of security. Our framework provides an isolated running environment for the offloading service via two layers of the system virtualization hierarchy. Different services can be isolated by running inside different \textit{Linux containers}, and different containers are allowed to be further isolated by running in different  \textit{virtual machines}. 
+Finally, it is critical to minimize security risks to the offloading services running on the edge servers. Isolation between different services could provide a certain level of security. Our framework provides an isolated running environment for the offloading service via two layers of the system virtualization hierarchy. Different services can be isolated by running inside different \textit{Linux containers}, and different containers are allowed to be further isolated by running in different  \textit{virtual machines}. 
 
 More thorough security solutions need to be designed before this framework can be deployed to the real world. These solutions include, but are not limited to efficient run-time monitoring, secure system updating, etc.. But here we focus on the mobility of services from the performance side, and leave most security work to the future.
 

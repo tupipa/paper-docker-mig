@@ -1,4 +1,4 @@
-In this section, we seek to answer the following questions: Why do edge applications need offloading of computation? Why is service handoff needed in edge computing? Why is migration needed for service handoff? Why do we seek to do service handoff via container migration?
+In this section, we seek to answer the following questions: Why do edge applications need offloading of computation? Why is service handoff needed in edge computing? Why is migration needed for service handoff? Why do we seek to perform service handoff via container migration?
 
 \subsection{Emerging Applications in Edge Computing Call For Computation Offloading}
 
@@ -52,8 +52,8 @@ In the edge infrastructure, mobile devices use edge servers to offload resource-
 When offloading services handoff from one edge server to another, just rebuilding the connection is certainly not enough. Instead, we need to transfer all the runtime states of offloaded workloads from the current edge server to the nearer edge server.  
 
 One possible solution is 
-to use virtual machine (VM) live migration\cite{vmlivemig} 
-to migrate a VM from one edge server to another in order to seamlessly transfer the offloading workloads. However, this approach has already been shown to be not suitable for edge computing environments in  \cite{ha2015vmhandoff}. 
+to use virtual machine (VM) live migration \cite{vmlivemig} 
+to migrate a VM from one edge server to another in order to seamlessly transfer the offloading workloads. However, this approach has already been shown to be not suitable for edge computing environments in \cite{ha2015vmhandoff}. 
 First, live migration and service handoff are optimized according to different performance metrics. While live migration aims to reduce \textit{downtime} of the VM, service handoff aims to reduce the \textit{total time} from the time when handoff request is issued to the completion time of the migration. This is well discussed in \cite{ha2015vmhandoff}.
 Second, live migration is originally designed for high performance data centers with high bandwidth networks. However, this is not possible for edge servers which are deployed over the WAN. Furthermore, live migration relies on network-based storage sharing so only run-time memory state is transferred and not storage data. Apparently, network-based storage sharing across the edge computing infrastructure is not feasible due to its widely distributed nature and low WAN bandwidth between edge servers. 
 
@@ -77,7 +77,7 @@ is a composing engine for Linux containers, an OS-level virtualization technique
 These layered images have the potential for fast migration of containers by avoiding transferrance of common image layers between two migration nodes. With container images (like in DockerHub) located in cloud storage, all the container images are available through the centralized image server. Therefore, before migration starts, an edge server has the opportunity to download the system and application images as the container base image stack. 
 During the migration, we only need to transfer the run-time memory states and the thin \textit{container layer} on top of the Docker image stack. 
 
-Apparently, the migration of Docker containers allows smaller transfer sizes than the virtual machine based approaches we introduced above. The layered storage in Docker infrastructure enables an opportunity for service handoff based on container migration. By reducing the transfer size as much as possible, we can provide a nearly seamless offloading service handoff across the adjacent edge servers on a WAN network.
+Apparently, the migration of Docker containers allows smaller transfer sizes than the virtual machine based approaches we have introduced above. The layered storage in Docker infrastructure enables an opportunity for service handoff based on container migration. By reducing the transfer size as much as possible, we can provide a nearly seamless offloading service handoff across the adjacent edge servers on a WAN network.
 
 However, as of this writing, there is no current tool to leverage Docker's layered images to migrate containers efficiently. In this paper, we propose our work to reduce transfer size during container migration by leveraging layered storage.
 % In order to do this, we must fist dive into the images layers underlying containers and avoid the transfer of application images stack. That is just transfer the ``\textit{container layer}''. 

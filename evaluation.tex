@@ -1,13 +1,13 @@
 
 In this section, we evaluate the performance of our system under different workloads and different network conditions. 
-Specifically, we evaluate offloading with our service handoff system by measuring the degree to which total hand-off time and total transferred size are reduced.
+Specifically, we evaluate offloading with our service handoff system by measuring the reduction of the overall hand-off time and  transferred data size.
 
 \subsection{Set-Up and Benchmark Workloads}
 
-Our test bed is built on a desktop server, which is equipped with Intel Core i3-6100 Processor (3.70GHz, 2 cores, 4 threads), and 16GB DDR4 memory. Two virtual machines are running with 2 vcpus and 4GB memory each.
+Our testbed is built on a desktop server, which is equipped with Intel Core i3-6100 Processor (3.70GHz, 2 cores, 4 threads), and 16GB DDR4 memory. Two virtual machines are running with 2 vcpus and 4GB memory each.
 % The laptop is with Intel$^{R}$ Core$^{TM}$ Duo T6570 (2.2GHz, 2 cores) and 2GB DDR2 memory. Both the machines and virtual machines are running Ubuntu 16.04 LTS as the operating system.
-A laptop acts as a client, this has Intel Core i5-2450M CPU (2.5GHz, 2 cores, 4 threads) and 4GB DDR3 memory. 
-The hosts and virtual machines are running Ubuntu 16.04 LTS as the operating system. Docker version is 1.10-dev which is built with experimental feature enabled.
+A laptop acts as a client with an Intel Core i5-2450M CPU (2.5GHz, 2 cores, 4 threads) and 4GB DDR3 memory. 
+The hosts and virtual machines are running Ubuntu 16.04 LTS as the operating system. Docker version is 1.10-dev, which is built with experimental feature enabled.
 
 In our experiment, we set up migration scenarios using 
 emulated bandwidth on two virtual machines each running a Docker instance.
@@ -16,7 +16,7 @@ Two virtual machines run on the same physical server.
 
 We use Linux Traffic Control (tc\cite{tc} )  tool to control network traffic. In order to test our system under WANs , we emulated low bandwidth ranging from 5Mbps to 45Mbps. According to the average bandwidth observed on the Internet\cite{internet2014state}, we set  latency at a fixed 50ms to emulate the WAN environment for edge computing.
 
-Since edge computing environments can also be adapted to the LAN network such as a university, smart homes, or other community, it usually can reach higher bandwidth as well as lower latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN.
+Since edge computing environments can also be adapted to the LAN network such as in a university, smart homes, or other community, they can usually have a high bandwidth as well as low network latency. Therefore, we also tested several higher bandwidths, ranging from 50Mpbs to 500Mpbs. The latency is set to 6ms which is an average latency from the author's university LAN.
 
 For the offloading workloads, we use Busybox as a simple workload to show the functionality of the system as well as the non-avoidable system overhead when processing container migration. In order to show the performance of offloading service handoff regarding real world applications, we chose OpenFace to provides a sample workload.
 

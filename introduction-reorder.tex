@@ -1,8 +1,8 @@
 
 % What is the problem?
 % Why is it interesting and important?
-Edge computing has attracted lots of attention both from industry and academia in recent years\cite{satya2009case,  MEC2014initiative, MEC2015-5G, yi2015fog,yi2015survey,shi2016edge,chiang2016fog,satya2017edge}.
-By placing resource-rich nodes in close proximity to mobile or Internet of Things (IoT) devices, edge computing offers more responsive services, along with higher scalability and availability than traditional cloud platforms \cite{MEC2014initiative,satya2017edge}.
+Edge computing has attracted lots of attention both from industry and academia in recent years~\cite{satya2009case,MEC2014initiative,MEC2015-5G,yi2015fog,yi2015survey,yi2015security,hao2016edgestore,shi2016edge,chiang2016fog,satya2017edge,hao2017challenges}. 
+By placing resource-rich nodes in close proximity to mobile or Internet of Things (IoT) devices, edge computing offers more responsive services, along with higher scalability and availability than traditional cloud platforms  \cite{MEC2014initiative, satya2017edge}.
 To take advantage of nearby resources, computation offloading techniques have been playing an important role~\cite{cuervo2010maui,lane2016deepx,openface2016,liu2016paradrop}.
 %%% here we can cite more offloading papers from the committee.
 
@@ -10,13 +10,13 @@ In edge computing environments, offloading computation to the nearest edge serve
 However, when a mobile device moves away from its current offloading server, network latency will increase, significantly deteriorating offloading service performance. Ideally, when the user moves, the edge server offloading service should adapt, and move to the nearest edge server in order to maintain highly responsive service. 
 % However, we don't want to add any down time during this procedure.
 % --- lele: here commented out 'down time', in order to emphasis the metrics of 'total duration' of the migration in the following.
-Therefore, migration of the offloading service from the current edge server to an edge server nearer to the user is a vitally important activity in the edge computing infrastructure. 
+Therefore, migration of the offloading service from the current edge server to an edge server nearer to the user is an important activity in the edge computing infrastructure. 
 
 % Why is it hard? (E.g., why do naive approaches fail?)
 % Why hasn't it been solved before? (Or, what's wrong with previous proposed solutions? How does mine differ?)
-There are several approaches for migrating offloading services. 
+There are several approaches to migrating offloading services. 
 VM handoff \cite{ha2015vmhandoff} has been proposed to accelerate service handoff across offloading edge servers. It divided VM images into two stacked overlays based on Virtual Machine (VM) synthesis \cite{satya2009case} techniques. 
-The result is that the mobile device only needs to transfer the VM top application overlay to the target server instead of the whole VM image volume. However, considering that the total transferred size is usually on order of tens or hundreds of megabytes, total handoff time is still relatively long for latency sensitive mobile applications. For example, migrating OpenFace \cite{openface2016}, a facial recognition application for wearable devices, will cost up to $247$ seconds on a 5Mbps wide area network (WAN), barely meeting the requirements of a responsive user experience. 
+The result is that the mobile device only needs to transfer the VM top application overlay to the target server instead of the whole VM image volume. However, considering that the total transferred size is usually on order of tens or hundreds of megabytes, total handoff time is still relatively long for latency sensitive mobile applications. For example, migrating OpenFace \cite{openface2016}, a face recognition application for wearable devices, will cost up to $247$ seconds on a 5Mbps wide area network (WAN), barely meeting the requirements of a responsive user experience. 
 Furthermore, VM image overlays are hard to maintain, and not widely available due to limited support and deployment in the real world.
 
 In contrast, the wide deployment of Docker platforms raises the possibility of high speed offloading service handoff. As a container engine, Docker~\cite{docker}  has gained increasing popularity in industrial cloud platforms. It serves as a composing engine for Linux containers, where an application runs in an isolated environment based on OS-level virtualization.
